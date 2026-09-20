@@ -1,0 +1,67 @@
+/*
+ * Shared frame for every page. It is the query container that --s measures,
+ * which keeps the scale honest: 100cqi is the space actually available, where
+ * 100vw would include the scrollbar and push the layout into horizontal
+ * overflow on platforms that reserve room for one.
+ */
+.page {
+  position: relative;
+  width: 100%;
+  /* Past this the composition stops inflating and sits centred on black. */
+  max-width: 1920px;
+  margin-inline: auto;
+  container-type: inline-size;
+}
+
+/*
+ * The scale factor behind every page. Dimensions are written as
+ * `calc(<design px> * var(--s))`, so at 1440px --s is exactly 1 and the page
+ * matches Figma pixel for pixel; at other widths it zooms in step, preserving
+ * every proportion. Set on the children because an element cannot query itself.
+ */
+.page > * {
+  --s: calc(100cqi / 1440);
+}
+
+/*
+ * The navigation sits 36px from the top on every page, as the design has it.
+ * The strip runs the full width between the 36px side margins, so the stack on
+ * about and contact can sit on the page's centre line while the row on the
+ * alternate homepage still ends 36px from the right edge. SiteNav places it
+ * within; the strip itself is inert, so it never swallows a hover meant for
+ * the artwork beneath.
+ */
+.header {
+  position: absolute;
+  top: calc(36 * var(--s));
+  left: calc(36 * var(--s));
+  right: calc(36 * var(--s));
+  z-index: 2;
+  pointer-events: none;
+}
+
+/*
+ * Below the desktop breakpoint the zoom would push type past readability, so
+ * pages reflow and --s returns to literal pixels. It stays a length: every rule
+ * multiplies it by a bare number, and `calc(16 * 1)` is a number, not a size, so
+ * a unitless value here silently drops every declaration that depends on it.
+ */
+@media (max-width: 1199px) {
+  .page > * {
+    --s: 1px;
+  }
+
+  .header {
+    position: sticky;
+    top: 0;
+    left: auto;
+    right: auto;
+    padding: var(--gutter);
+    /* Keeps the pills legible as content scrolls beneath them. */
+    background: linear-gradient(
+      to bottom,
+      var(--color-canvas) 60%,
+      transparent
+    );
+  }
+}

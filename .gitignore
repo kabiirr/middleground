@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Screen recordings kept alongside the project, not part of the site.
+/Microsoft Edge.mp4
+/Microsoft Edge2.mp4

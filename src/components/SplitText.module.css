@@ -1,0 +1,35 @@
+/*
+ * Each glyph sits in its own clipping mask so it can roll up from below the
+ * baseline rather than fading in place.
+ */
+.mask {
+  display: inline-block;
+  overflow: hidden;
+  /*
+   * Italic display faces overhang their advance width; the padding keeps the
+   * mask from shearing the tail off a letter, and the matching negative margin
+   * means it costs no extra space.
+   */
+  padding-inline: 0.06em;
+  margin-inline: -0.06em;
+  /* Descenders need room inside the mask too. */
+  padding-bottom: 0.18em;
+  margin-bottom: -0.18em;
+  vertical-align: top;
+}
+
+.glyph {
+  display: inline-block;
+  will-change: transform;
+}
+
+/* Without JavaScript the glyphs simply sit where they belong. */
+:global(html.js) .glyph {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :global(html.js) .glyph {
+    opacity: 1;
+  }
+}

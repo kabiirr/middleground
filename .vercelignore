@@ -1,0 +1,14 @@
+# Vercel uploads the working directory, so anything not listed here is sent —
+# tracked by git or not. That is what carries public/images up with the code.
+# This file replaces .gitignore for that purpose, so the build artefacts have
+# to be named again here.
+node_modules
+.next
+.git
+.DS_Store
+*.tsbuildinfo
+
+# Screen recordings kept alongside the project, not part of the site. Anchored
+# to the root so the mosaic's own clips in public/images are untouched.
+/Microsoft Edge.mp4
+/Microsoft Edge2.mp4

@@ -1,0 +1,36 @@
+/*
+ * The header strip spans the page so the navigation can be placed anywhere
+ * across it. Only the pills themselves take the pointer — without this the
+ * strip would swallow hovers and clicks meant for the artwork beneath it.
+ */
+.corner,
+.centre {
+  display: flex;
+  pointer-events: none;
+}
+
+.corner > *,
+.centre > * {
+  pointer-events: auto;
+}
+
+/* The alternate homepage keeps the row the frame draws, over the top row. */
+.corner {
+  justify-content: flex-end;
+}
+
+/* About and contact carry the homepage's stack, on the page's centre line. */
+.centre {
+  justify-content: center;
+}
+
+@media (max-width: 1199px) {
+  /*
+   * No centre column to sit on once the pages reflow, and the header is a
+   * sticky strip rather than a floating one, so both forms sit to the right as
+   * the rest of the site's chrome does.
+   */
+  .centre {
+    justify-content: flex-end;
+  }
+}

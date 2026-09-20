@@ -1,40 +1,96 @@
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Cartograph CF — monospace, used for the navigation. */
+@font-face {
+  font-family: "Cartograph CF";
+  src: url("/fonts/CartographCF-Light.woff2") format("woff2");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+@font-face {
+  font-family: "Cartograph CF";
+  src: url("/fonts/CartographCF-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Miller Display — the italic display cut used for the large type. */
+@font-face {
+  font-family: "Miller Display";
+  src: url("/fonts/MillerDisplay-Italic.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Articulat CF — grotesque, used for body copy. */
+@font-face {
+  font-family: "Articulat CF";
+  src: url("/fonts/ArticulatCF-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Articulat CF";
+  src: url("/fonts/ArticulatCF-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  /* Palette, straight from the Figma frame. */
+  --color-canvas: #000000;
+  --color-tile: #d9d9d9;
+  --color-ink: #ffffff;
+  --color-pill: #ffffff;
+  --color-pill-active: #efefe9;
+  --color-pill-ink: #000000;
+
+  --font-mono: "Cartograph CF", ui-monospace, "SF Mono", Menlo, monospace;
+  --font-sans: "Articulat CF", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-display: "Miller Display", ui-serif, Georgia, "Times New Roman", serif;
+
+  /* Outer margin of the mosaic, 24px at the 1440px design width. */
+  --gutter: 24px;
+
+  /*
+   * Fallback for the scale factor behind the composition; the real value is set
+   * on the page wrapper, which measures itself rather than the viewport. It is a
+   * length, not a number: rules multiply it by a bare number, and the result has
+   * to carry a unit.
+   */
+  --s: 1px;
+
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
 html {
-  height: 100%;
-}
-
-html,
-body {
-  max-width: 100vw;
-  overflow-x: hidden;
+  /* The mosaic is the page; keep the black canvas behind any overscroll. */
+  background-color: var(--color-canvas);
 }
 
 body {
-  min-height: 100%;
-  display: flex;
-  flex-direction: column;
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-* {
-  box-sizing: border-box;
-  padding: 0;
   margin: 0;
+  background-color: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+img,
+svg {
+  display: block;
 }
 
 a {
@@ -42,8 +98,94 @@ a {
   text-decoration: none;
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
+/* A visible focus ring is the only affordance keyboard users get here. */
+:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 3px;
+}
+
+/*
+ * Entrance choreography. The start state is applied in CSS, before first paint,
+ * so nothing flashes in and then jumps — but only once the inline script in the
+ * document head has confirmed JavaScript is running. Without JS, or with
+ * reduced motion, every element simply renders in place.
+ */
+html.js [data-reveal]:not([data-revealed]),
+html.js [data-intro]:not([data-revealed]) {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.js [data-reveal]:not([data-revealed]),
+  html.js [data-intro]:not([data-revealed]) {
+    opacity: 1;
+  }
+}
+
+/*
+ * The minimised navigation opens over the page on about and contact, where the
+ * mark sits 120px down — the place the design gives it under a navigation in
+ * the corner. Three pills will not stack in the 84px above it, so the mark
+ * yields for as long as the navigation is open rather than being covered by it.
+ *
+ * Keyed to data-revealed so it can only run once the entrance has finished
+ * handing the element back to CSS: a transition declared while the entrance is
+ * still setting opacity frame by frame would smear it.
+ */
+[data-mark][data-revealed] {
+  transition: opacity 320ms ease;
+}
+
+body:has([data-nav="overlay"]:hover) [data-mark],
+body:has([data-nav="overlay"]:focus-within) [data-mark] {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-mark][data-revealed] {
+    transition: none;
+  }
+}
+
+/* Available to screen readers, absent from the visual design. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Skip link, hidden until focused. */
+.skip-link {
+  position: absolute;
+  top: var(--gutter);
+  left: var(--gutter);
+  z-index: 10;
+  padding: 12px 16px;
+  background-color: var(--color-pill);
+  color: var(--color-pill-ink);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  border-radius: 54px;
+  transform: translateY(-200%);
+}
+
+.skip-link:focus-visible {
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

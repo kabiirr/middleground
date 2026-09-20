@@ -1,0 +1,27 @@
+/* Size and position are the page's; this is only what fills them. */
+.monogram {
+  display: block;
+}
+
+.mark {
+  width: 100%;
+  height: 100%;
+  /* One turn a little under half a minute: present, but never hurrying. */
+  animation: turn 28s linear infinite;
+}
+
+@keyframes turn {
+  to {
+    rotate: 1turn;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /*
+   * The global reduced-motion rule collapses durations, which would leave this
+   * spinning at speed rather than stopping it. Stop it outright.
+   */
+  .mark {
+    animation: none !important;
+  }
+}

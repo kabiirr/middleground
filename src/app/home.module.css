@@ -1,0 +1,104 @@
+/*
+ * The homepage (node 2068:176).
+ *
+ * The studio's name, its line and the navigation take the middle column and
+ * stay put while the mosaic runs past on either side. The mosaic carries no
+ * tiles in that column, so nothing ever passes behind the panel.
+ */
+.panel {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  /* Column three of the same grid the mosaic is built on. */
+  left: calc(50% - 129.6 * var(--s));
+  width: calc(259.2 * var(--s));
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* Only the things themselves take the pointer, not the column around them. */
+.panel > * {
+  pointer-events: auto;
+}
+
+/*
+ * The navigation leads the panel, sitting where it does on every other page —
+ * 36px down from the top edge.
+ */
+.nav {
+  position: absolute;
+  top: calc(36 * var(--s));
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+}
+
+.mark {
+  position: absolute;
+  /* Below the navigation, with room to breathe. Nudge this to taste. */
+  top: calc(260 * var(--s));
+  left: calc(50% - 39.7805 * var(--s));
+  width: calc(79.561 * var(--s));
+  height: calc(79.561 * var(--s));
+}
+
+.tagline {
+  position: absolute;
+  /*
+   * The mark's foot plus the 190px the studio's name holds above its line
+   * everywhere else on the site: 260 + 79.561 + 190.
+   */
+  top: calc(529.561 * var(--s));
+  left: calc(50% - 117.5 * var(--s));
+  width: calc(235 * var(--s));
+  margin: 0;
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: calc(16 * var(--s));
+  line-height: 1.2;
+  letter-spacing: calc(-0.32 * var(--s));
+  color: var(--color-ink);
+  text-align: center;
+}
+
+@media (max-width: 1199px) {
+  /*
+   * No middle column to sit in once the mosaic reflows, so the panel leads the
+   * page instead and scrolls with it.
+   */
+  .panel {
+    position: static;
+    display: flex;
+    flex-direction: column;
+    width: auto;
+    left: auto;
+    padding: 36px var(--gutter) 48px;
+  }
+
+  .mark,
+  .tagline,
+  .nav {
+    position: static;
+    left: auto;
+    right: auto;
+    width: auto;
+  }
+
+  .nav {
+    order: -1;
+  }
+
+  .mark {
+    width: 80px;
+    height: 80px;
+    margin: 48px auto 0;
+  }
+
+  .tagline {
+    max-width: 34ch;
+    margin: 40px auto 0;
+    font-size: 16px;
+    letter-spacing: -0.32px;
+  }
+}

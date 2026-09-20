@@ -1,0 +1,105 @@
+/*
+ * Node 2058:46. The design frame is 1440 x 850, so the screen is exactly that
+ * tall at the design width — but it grows to fill a taller viewport, with the
+ * monogram and copy anchored to the top and the marquee to the bottom, so the
+ * composition holds at any window height.
+ */
+.screen {
+  position: relative;
+  min-height: max(calc(850 * var(--s)), 100svh);
+  overflow: hidden;
+}
+
+/*
+ * Centred by offset rather than by translate. These blocks play the page's
+ * entrance, and GSAP clears the individual transform properties when it takes
+ * over an element's transform — a translate used for centring would be wiped
+ * the moment the animation finished, dropping the block half its width to the
+ * right.
+ */
+.monogram {
+  position: absolute;
+  top: calc(120 * var(--s));
+  left: calc(50% - 39.7805 * var(--s));
+  width: calc(79.561 * var(--s));
+  height: calc(79.561 * var(--s));
+}
+
+.copy {
+  position: absolute;
+  top: calc(272 * var(--s));
+  left: calc(50% - 220.5 * var(--s));
+  width: calc(441 * var(--s));
+  margin: 0;
+  color: var(--color-pill-active);
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: calc(18 * var(--s));
+  line-height: 1.5;
+  text-align: center;
+}
+
+/* The design separates paragraphs by a single blank line. */
+.copy p {
+  margin: 0;
+}
+
+.copy p + p {
+  margin-top: 1.5em;
+}
+
+.marquee {
+  position: absolute;
+  /*
+   * 633.8px from the top of an 850px frame, measured from the bottom instead —
+   * less the 40px of padding the strip carries for its pills, so the line of
+   * type still lands where the design puts it.
+   */
+  bottom: calc(44.2 * var(--s));
+  left: 0;
+  right: 0;
+}
+
+@media (max-width: 1199px) {
+  .screen {
+    min-height: 100svh;
+    /* Clears the sticky header. */
+    padding-top: 24px;
+  }
+
+  .monogram {
+    position: static;
+    left: auto;
+    margin: 32px auto 0;
+    width: 80px;
+    height: 80px;
+  }
+
+  .copy {
+    position: static;
+    left: auto;
+    width: auto;
+    max-width: 441px;
+    margin: 48px auto 0;
+    padding-inline: var(--gutter);
+    font-size: 18px;
+  }
+
+  .marquee {
+    position: static;
+    margin-top: 72px;
+    padding-bottom: 48px;
+    /*
+     * The strip is built entirely from `calc(<design px> * var(--s))`, so
+     * scaling --s alone shrinks the type and the gaps between phrases together,
+     * keeping the design's proportions intact.
+     */
+    --s: 0.67px;
+  }
+}
+
+@media (max-width: 767px) {
+  .marquee {
+    --s: 0.42px;
+  }
+}

@@ -1,0 +1,115 @@
+/*
+ * Node 2058:73. As on the about page the screen is the design frame at the
+ * design width and grows to fill a taller viewport: the details stay pinned to
+ * the vertical centre and "Reach out" to the bottom edge.
+ */
+.screen {
+  position: relative;
+  min-height: max(calc(850 * var(--s)), 100svh);
+  overflow: hidden;
+}
+
+/* The mark sits where it does on the about page, so the two pages rhyme. */
+.monogram {
+  position: absolute;
+  top: calc(120 * var(--s));
+  left: calc(50% - 39.7805 * var(--s));
+  width: calc(79.561 * var(--s));
+  height: calc(79.561 * var(--s));
+}
+
+/*
+ * Centred on the viewport and lifted 80px, exactly as drawn — but by offset
+ * rather than translate. This block plays the page's entrance, and GSAP clears
+ * the individual transform properties when it takes over an element's
+ * transform, so a translate used for centring would be wiped the moment the
+ * animation finished. The 150 is the 80px lift plus half the block's height,
+ * which is four lines at the 35px pitch set below.
+ */
+.details {
+  position: absolute;
+  top: calc(50% - 150 * var(--s));
+  left: calc(50% - 123.5 * var(--s));
+  width: calc(247 * var(--s));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  text-align: center;
+}
+
+.details li {
+  font-family: var(--font-mono);
+  font-weight: 300;
+  font-size: calc(16 * var(--s));
+  /*
+   * The design sets the lines 35px apart cap to cap. Carrying that on
+   * line-height rather than a gap keeps the spacing identical in every browser,
+   * since it does not depend on trimming the font's own leading.
+   */
+  line-height: calc(35 * var(--s));
+  color: var(--color-ink);
+  text-transform: uppercase;
+}
+
+.details a {
+  text-decoration: none;
+}
+
+.details a:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+}
+
+.headline {
+  position: absolute;
+  /* Sits flush with the bottom edge of the frame. */
+  bottom: 0;
+  left: calc(2 * var(--s));
+  margin: 0;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+  font-size: calc(351.975 * var(--s));
+  line-height: 1;
+  color: var(--color-ink);
+  white-space: nowrap;
+}
+
+@media (max-width: 1199px) {
+  .screen {
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .monogram {
+    position: static;
+    left: auto;
+    margin: 0 auto 40px;
+    width: 80px;
+    height: 80px;
+  }
+
+  .details {
+    position: static;
+    top: auto;
+    left: auto;
+    width: auto;
+    padding-inline: var(--gutter);
+  }
+
+  .details li {
+    font-size: 16px;
+    line-height: 35px;
+  }
+
+  .headline {
+    position: static;
+    margin-top: auto;
+    left: auto;
+    padding-left: 2px;
+    /* Scales with the viewport so the words still span the full width. */
+    font-size: 24.4vw;
+  }
+}

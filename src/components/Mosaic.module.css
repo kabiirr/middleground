@@ -1,0 +1,146 @@
+/* Holds the two stacked passes of the mosaic that make the loop seamless. */
+.loop {
+  position: relative;
+}
+
+/*
+ * The canvas is a proportional zoom of the design: 1440 design units wide,
+ * multiplied by --s. Tiles sit on it at their exact design coordinates. Its
+ * width and height come from the tile data, so the page lengthens on its own as
+ * rows are appended.
+ */
+.canvas {
+  position: relative;
+  width: calc(var(--canvas-width) * var(--s));
+  height: calc(var(--canvas-height) * var(--s));
+  margin-inline: auto;
+}
+
+.tile {
+  position: absolute;
+  overflow: hidden;
+  background-color: var(--color-tile);
+}
+
+/*
+ * Both the hover transition and the dimming wait for the entrance to finish and
+ * hand the tile back to CSS. Before that the tile's opacity is being written
+ * inline every frame, which a CSS transition would only fight.
+ */
+/*
+ * A tile the studio's name is standing in for. visibility rather than opacity
+ * alone: the hover rules also write opacity, and this has to win regardless.
+ */
+.tile[data-covered] {
+  visibility: hidden;
+}
+
+.tile[data-revealed] {
+  transition: opacity 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/*
+ * Hovering one tile pulls focus by receding the rest. Scoped with :has so it
+ * costs nothing until a pointer is actually over a tile.
+ */
+.canvas:has(.tile:hover .media) .tile[data-revealed]:not(:hover) {
+  opacity: 0.35;
+}
+
+/* Stills and clips are cropped to the tile identically. */
+.media {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 500ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* The image eases in behind a fixed tile edge. */
+.tile:hover .media,
+.link:focus-visible .media {
+  transform: scale(1.06);
+}
+
+.caption {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  padding: calc(14 * var(--s));
+  margin: 0;
+  font-family: var(--font-mono);
+  font-weight: 300;
+  font-size: calc(13 * var(--s));
+  line-height: 1;
+  color: var(--color-ink);
+  background: linear-gradient(to top, rgb(0 0 0 / 0.72), transparent);
+  opacity: 0;
+  translate: 0 100%;
+  transition:
+    opacity 320ms ease,
+    translate 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.tile:hover .caption,
+.link:focus-visible .caption {
+  opacity: 1;
+  translate: 0 0;
+}
+
+.link {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/*
+ * Below the desktop breakpoint the absolute composition stops working: the
+ * scale factor would shrink type past readability. The mosaic reflows into a
+ * simple column-based masonry instead, keeping each tile's aspect ratio.
+ */
+@media (max-width: 1199px) {
+  .canvas {
+    width: auto;
+    height: auto;
+    /*
+     * Multi-column rather than grid: tiles keep their individual Figma
+     * proportions and stack without the ragged gaps that equal-height grid
+     * rows would leave between them.
+     */
+    columns: 3;
+    column-gap: var(--gutter);
+    padding: var(--gutter);
+  }
+
+  .tile {
+    /* Not static: next/image fill is absolutely positioned within the tile. */
+    position: relative;
+    width: auto;
+    height: auto;
+    /* Set per tile from its Figma dimensions. */
+    aspect-ratio: var(--tile-ratio);
+    margin-bottom: var(--gutter);
+    break-inside: avoid;
+  }
+}
+
+@media (max-width: 767px) {
+  .canvas {
+    columns: 2;
+  }
+}
+
+@media (max-width: 479px) {
+  .canvas {
+    columns: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .canvas:has(.tile:hover .media) .tile[data-revealed]:not(:hover) {
+    opacity: 1;
+  }
+
+  .caption {
+    translate: none;
+  }
+}

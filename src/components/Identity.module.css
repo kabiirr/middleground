@@ -1,0 +1,100 @@
+/*
+ * Node 2056:3 — logo and tagline in the centre column, centred on the first
+ * screenful.
+ *
+ * The logotype sits at the top of the block and the tagline at the foot, with
+ * the space between them falling out of the block's height. For the fixed block
+ * that height is its contents plus the design's 190px, so the gap comes out at
+ * exactly 190; for the roaming copy it is whatever its host tile is, which is
+ * what keeps the grid's 24px gutters intact wherever the name lands.
+ */
+.identity {
+  position: absolute;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/*
+ * At its exported size. The SVG is set to preserveAspectRatio="none", so the box
+ * has to keep the artwork's own ratio or it would shear.
+ */
+.logo {
+  width: calc(84.865 * var(--s));
+  height: calc(45.2375 * var(--s));
+}
+
+.tagline {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: calc(16 * var(--s));
+  line-height: 1.2;
+  letter-spacing: calc(-0.32 * var(--s));
+  color: var(--color-ink);
+  /*
+   * Reserves slack so the tagline breaks on the same words as the design.
+   *
+   * Only one break is a close call: "studio" must fall to line two. With it,
+   * line one measures 258.74px; the longest line that must still fit is line
+   * two at 246.63px. So any wrapping width between 247 and 258 yields the
+   * design's three lines — 256 sits in the middle of that window, well clear of
+   * sub-pixel rounding at any scale. No glyph moves: the text is left-aligned
+   * and every line is shorter than the reduced width.
+   */
+  padding-right: calc(3 * var(--s));
+}
+
+@media (max-width: 1199px) {
+  .identity {
+    position: static;
+    width: auto;
+    height: auto;
+    /* Full-width band above the reflowed mosaic; the tall gap is desktop-only. */
+    column-span: all;
+    gap: 24px;
+    padding-block: 8px 32px;
+  }
+
+  .logo {
+    width: 84.865px;
+    height: 45.2375px;
+  }
+
+  .tagline {
+    max-width: 34ch;
+    font-size: 16px;
+    letter-spacing: -0.32px;
+  }
+}
+
+/*
+ * The roaming copy. It carries no position until IdentityRelay gives it one, so
+ * it stays out of sight rather than stacking on top of the fixed block at the
+ * top of the canvas.
+ */
+.roaming {
+  composes: identity;
+  left: calc(var(--slot-x, 0) * var(--s));
+  top: calc(var(--slot-y, 0) * var(--s));
+  width: calc(var(--slot-w, 0) * var(--s));
+  /* Exactly its host tile, so the gutters around it are the grid's own. */
+  height: calc(var(--slot-h, 0) * var(--s));
+  visibility: hidden;
+}
+
+.roaming[data-placed] {
+  visibility: visible;
+}
+
+@media (max-width: 1199px) {
+  /*
+   * The reflowed mosaic has no fixed slots to stand in, and the block already
+   * sits as a full-width band at the top, so the roaming copy stays away.
+   */
+  .roaming,
+  .roaming[data-placed] {
+    display: none;
+  }
+}

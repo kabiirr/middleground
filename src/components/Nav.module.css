@@ -1,0 +1,190 @@
+.list {
+  display: flex;
+  align-items: center;
+  gap: calc(12 * var(--s));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  /*
+   * One easing and one duration for everything that moves here, so a pill and
+   * the stack it sits in settle together rather than at two different moments.
+   * The curve matches the page transition's own.
+   */
+  --nav-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --nav-duration: 560ms;
+}
+
+/*
+ * The pill is as wide as its own label and the 14px of padding either side —
+ * the height is the design's, the width is the text's.
+ */
+.pill {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  height: calc(39 * var(--s));
+  padding-inline: calc(14 * var(--s));
+  border-radius: calc(54 * var(--s));
+  background-color: var(--color-pill);
+  color: var(--color-pill-ink);
+  font-family: var(--font-mono);
+  font-weight: 300;
+  font-size: calc(16 * var(--s));
+  line-height: 1;
+  white-space: nowrap;
+  transition: background-color var(--nav-duration) var(--nav-ease);
+}
+
+.pill:hover {
+  background-color: var(--color-pill-active);
+}
+
+/*
+ * Keyed to data-active rather than aria-current: the look leads the navigation
+ * by the length of the page transition, while aria-current waits for the route
+ * to actually commit.
+ */
+.pill[data-active] {
+  background-color: var(--color-pill-active);
+}
+
+@media (max-width: 1199px) {
+  .list {
+    gap: 12px;
+  }
+
+  .pill {
+    height: 39px;
+    padding-inline: 14px;
+    border-radius: 54px;
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 479px) {
+  .list {
+    gap: 8px;
+  }
+
+  /* Tighter, so three labels still sit across the narrowest screens. */
+  .pill {
+    height: 34px;
+    padding-inline: 12px;
+    font-size: 13px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pill {
+    transition: none;
+  }
+}
+
+/*
+ * The minimised navigation: only the page you are on, with the rest folding out
+ * below on hover — and on focus, so it can still be reached from the keyboard.
+ *
+ * The items collapse by height rather than being removed, so they animate open
+ * and closed and stay in the accessibility tree throughout.
+ */
+.minimal .list {
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+
+.minimal .item {
+  overflow: hidden;
+  transition:
+    height var(--nav-duration) var(--nav-ease),
+    margin-top var(--nav-duration) var(--nav-ease),
+    opacity 260ms ease;
+}
+
+.minimal .item:not(:has([data-active])) {
+  height: 0;
+  margin-top: 0;
+  opacity: 0;
+}
+
+.minimal:hover .item,
+.minimal:focus-within .item {
+  height: calc(39 * var(--s));
+  margin-top: calc(12 * var(--s));
+  opacity: 1;
+}
+
+/*
+ * The one you are on never moves; the others open beneath it. It leads the
+ * stack whatever its place in the list — otherwise, on about and contact, the
+ * items above it would grow and push it down as the rest unfolded.
+ */
+.minimal .item:has([data-active]) {
+  order: -1;
+}
+
+.minimal .item:has([data-active]),
+.minimal:hover .item:has([data-active]),
+.minimal:focus-within .item:has([data-active]) {
+  height: calc(39 * var(--s));
+  margin-top: 0;
+  opacity: 1;
+}
+
+/* Each one a beat behind the last as they unfold. */
+.minimal .item:nth-child(2) {
+  transition-delay: 40ms;
+}
+
+.minimal .item:nth-child(3) {
+  transition-delay: 80ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .minimal .item {
+    transition: none;
+  }
+}
+
+/*
+ * Nothing hovers on a touch screen, and the minimised form carries every page
+ * but the alternate homepage — so left folded it would put the rest of the
+ * site out of reach. Tapping a pill cannot open it either, since the tap
+ * navigates. It stands open instead.
+ */
+@media (hover: none) {
+  .minimal .item,
+  .minimal .item:not(:has([data-active])) {
+    height: calc(39 * var(--s));
+    margin-top: calc(12 * var(--s));
+    opacity: 1;
+  }
+
+  .minimal .item:has([data-active]) {
+    margin-top: 0;
+  }
+}
+
+/*
+ * The minimised form is an arrangement for the fixed compositions: it needs
+ * the room below the pill to open into, which the reflowed pages do not have —
+ * there the header is a sticky strip, and a stack three pills deep would hold
+ * a fifth of the screen. Below the breakpoint every page shows the full row,
+ * as it did before. Last in the file so it lands on top of both the fold-out
+ * and the touch fallback above.
+ */
+@media (max-width: 1199px) {
+  .minimal .list {
+    flex-direction: row;
+    gap: 12px;
+  }
+
+  .minimal .item,
+  .minimal .item:not(:has([data-active])),
+  .minimal .item:has([data-active]) {
+    height: auto;
+    margin-top: 0;
+    opacity: 1;
+  }
+}

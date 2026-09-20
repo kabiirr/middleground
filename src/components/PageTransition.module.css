@@ -1,0 +1,4 @@
+.stage {
+  /* Kept off the compositor until something actually moves. */
+  will-change: auto;
+}
