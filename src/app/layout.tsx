@@ -26,6 +26,12 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: "#000000",
+  /*
+   * The canvas is black to the edges, and this is also what makes
+   * env(safe-area-inset-*) report anything at all on a phone with a cutout —
+   * the header and the pages anchored to the bottom edge read those.
+   */
+  viewportFit: "cover",
 };
 
 /**

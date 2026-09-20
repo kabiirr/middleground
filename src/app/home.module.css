@@ -14,6 +14,14 @@
   width: calc(259.2 * var(--s));
   z-index: 2;
   pointer-events: none;
+
+  /*
+   * The mark's size and where it sits, in design pixels. Both are stated here
+   * because the tagline's own position is measured from them — change the size
+   * and the line keeps its distance below the mark on its own.
+   */
+  --mark-size: 120;
+  --mark-top: 260;
 }
 
 /* Only the things themselves take the pointer, not the column around them. */
@@ -36,20 +44,20 @@
 
 .mark {
   position: absolute;
-  /* Below the navigation, with room to breathe. Nudge this to taste. */
-  top: calc(260 * var(--s));
-  left: calc(50% - 39.7805 * var(--s));
-  width: calc(79.561 * var(--s));
-  height: calc(79.561 * var(--s));
+  /* Below the navigation, with room to breathe. Nudge --mark-top to taste. */
+  top: calc(var(--mark-top) * var(--s));
+  left: calc(50% - var(--mark-size) / 2 * var(--s));
+  width: calc(var(--mark-size) * var(--s));
+  height: calc(var(--mark-size) * var(--s));
 }
 
 .tagline {
   position: absolute;
   /*
    * The mark's foot plus the 190px the studio's name holds above its line
-   * everywhere else on the site: 260 + 79.561 + 190.
+   * everywhere else on the site.
    */
-  top: calc(529.561 * var(--s));
+  top: calc((var(--mark-top) + var(--mark-size) + 190) * var(--s));
   left: calc(50% - 117.5 * var(--s));
   width: calc(235 * var(--s));
   margin: 0;
@@ -73,7 +81,8 @@
     flex-direction: column;
     width: auto;
     left: auto;
-    padding: 36px var(--gutter) 48px;
+    /* The foot of the band is what separates the line from the grid. */
+    padding: 36px var(--gutter) 88px;
   }
 
   .mark,
@@ -92,13 +101,13 @@
   .mark {
     width: 80px;
     height: 80px;
-    margin: 48px auto 0;
+    margin: 72px auto 0;
   }
 
   .tagline {
     max-width: 34ch;
-    margin: 40px auto 0;
-    font-size: 16px;
+    margin: 56px auto 0;
+    font-size: clamp(15px, 4.1vw, 16px);
     letter-spacing: -0.32px;
   }
 }

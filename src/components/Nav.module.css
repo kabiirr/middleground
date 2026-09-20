@@ -13,6 +13,9 @@
    */
   --nav-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --nav-duration: 560ms;
+
+  /* Stated once: the stack opens each item to exactly the pill's height. */
+  --pill-height: calc(39 * var(--s));
 }
 
 /*
@@ -23,11 +26,14 @@
   display: flex;
   align-items: center;
   box-sizing: border-box;
-  height: calc(39 * var(--s));
+  height: var(--pill-height);
   padding-inline: calc(14 * var(--s));
   border-radius: calc(54 * var(--s));
   background-color: var(--color-pill);
   color: var(--color-pill-ink);
+  /* The pill you are on is a button where the stack opens on a tap. */
+  border: 0;
+  font: inherit;
   font-family: var(--font-mono);
   font-weight: 300;
   font-size: calc(16 * var(--s));
@@ -55,7 +61,6 @@
   }
 
   .pill {
-    height: 39px;
     padding-inline: 14px;
     border-radius: 54px;
     font-size: 16px;
@@ -67,11 +72,17 @@
     gap: 8px;
   }
 
-  /* Tighter, so three labels still sit across the narrowest screens. */
+  /*
+   * Tighter across, but never shorter: 44px is the smallest a target should
+   * be for a finger.
+   */
+  .list {
+    --pill-height: 44px;
+  }
+
   .pill {
-    height: 34px;
     padding-inline: 12px;
-    font-size: 13px;
+    font-size: 14px;
   }
 }
 
@@ -109,8 +120,9 @@
 }
 
 .minimal:hover .item,
-.minimal:focus-within .item {
-  height: calc(39 * var(--s));
+.minimal:focus-within .item,
+.minimal[data-open] .item {
+  height: var(--pill-height);
   margin-top: calc(12 * var(--s));
   opacity: 1;
 }
@@ -126,8 +138,9 @@
 
 .minimal .item:has([data-active]),
 .minimal:hover .item:has([data-active]),
-.minimal:focus-within .item:has([data-active]) {
-  height: calc(39 * var(--s));
+.minimal:focus-within .item:has([data-active]),
+.minimal[data-open] .item:has([data-active]) {
+  height: var(--pill-height);
   margin-top: 0;
   opacity: 1;
 }
@@ -148,43 +161,17 @@
 }
 
 /*
- * Nothing hovers on a touch screen, and the minimised form carries every page
- * but the alternate homepage — so left folded it would put the rest of the
- * site out of reach. Tapping a pill cannot open it either, since the tap
- * navigates. It stands open instead.
+ * Nothing can set data-open without JavaScript, and on a touch screen there is
+ * no hover to fall back on — which would leave every page but the one you are
+ * on out of reach. Folded is the enhancement; open is the floor.
  */
-@media (hover: none) {
-  .minimal .item,
-  .minimal .item:not(:has([data-active])) {
-    height: calc(39 * var(--s));
-    margin-top: calc(12 * var(--s));
-    opacity: 1;
-  }
-
-  .minimal .item:has([data-active]) {
-    margin-top: 0;
-  }
+:global(html:not(.js)) .minimal .item,
+:global(html:not(.js)) .minimal .item:not(:has([data-active])) {
+  height: var(--pill-height);
+  margin-top: calc(12 * var(--s));
+  opacity: 1;
 }
 
-/*
- * The minimised form is an arrangement for the fixed compositions: it needs
- * the room below the pill to open into, which the reflowed pages do not have —
- * there the header is a sticky strip, and a stack three pills deep would hold
- * a fifth of the screen. Below the breakpoint every page shows the full row,
- * as it did before. Last in the file so it lands on top of both the fold-out
- * and the touch fallback above.
- */
-@media (max-width: 1199px) {
-  .minimal .list {
-    flex-direction: row;
-    gap: 12px;
-  }
-
-  .minimal .item,
-  .minimal .item:not(:has([data-active])),
-  .minimal .item:has([data-active]) {
-    height: auto;
-    margin-top: 0;
-    opacity: 1;
-  }
+:global(html:not(.js)) .minimal .item:has([data-active]) {
+  margin-top: 0;
 }

@@ -16,8 +16,13 @@
   margin-inline: auto;
 }
 
+/* Placed on the canvas from the design coordinates the tile carries. */
 .tile {
   position: absolute;
+  left: calc(var(--x) * var(--s));
+  top: calc(var(--y) * var(--s));
+  width: calc(var(--w) * var(--s));
+  height: calc(var(--h) * var(--s));
   overflow: hidden;
   background-color: var(--color-tile);
 }
@@ -114,6 +119,8 @@
   .tile {
     /* Not static: next/image fill is absolutely positioned within the tile. */
     position: relative;
+    /* The design coordinates mean nothing once the tiles simply flow. */
+    inset: auto;
     width: auto;
     height: auto;
     /* Set per tile from its Figma dimensions. */

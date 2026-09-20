@@ -112,19 +112,25 @@ export const services: Service[] = [
 
 export type ContactLink = {
   label: string;
-  /**
-   * Leave undefined and the entry renders as plain text. The social handles are
-   * not spelled out as URLs in the design, so only the address is linked —
-   * fill these in once the real profile URLs are confirmed, e.g.
-   * href: "https://instagram.com/<handle>".
-   */
+  /** Leave undefined and the entry renders as plain text rather than a link. */
   href?: string;
 };
 
-/** Contact details (node 2058:86). Rendered uppercase, as in the design. */
+/**
+ * Contact details (node 2058:86). Rendered uppercase, as in the design, which
+ * spells the handles out as plain text; the profiles are linked here.
+ *
+ * The addresses are the canonical ones. The share links these came from
+ * carried tracking parameters — `?s=11` on X, a `?stkn=` share token on
+ * Instagram — which identify whoever copied them and have no business in a
+ * page anyone can open.
+ */
 export const contactLinks: ContactLink[] = [
   { label: "hello@middleground.design", href: "mailto:hello@middleground.design" },
-  { label: "IG: middleground.design" },
-  { label: "x: middleground.design" },
-  { label: "L’in: middleground.design" },
+  { label: "IG: @by_middleground", href: "https://www.instagram.com/by_middleground" },
+  { label: "x: @bymiddleground", href: "https://x.com/bymiddleground" },
+  {
+    label: "L’in: @bymiddleground",
+    href: "https://www.linkedin.com/company/bymiddleground/",
+  },
 ];

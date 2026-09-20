@@ -1,0 +1,72 @@
+/*
+ * The marks left behind by clicking the page. The layer covers the surface it
+ * was put in and takes no pointer events at all — the page beneath keeps every
+ * one of them, including the clicks that put marks here in the first place.
+ */
+.layer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+
+  /* How much ink a mark carries at its strongest. */
+  --ink: 0.8;
+}
+
+.stamp {
+  position: absolute;
+  width: calc(64 * var(--s));
+  height: calc(64 * var(--s));
+  /* Centred on the point pressed, and never quite straight. */
+  translate: -50% -50%;
+  rotate: var(--lean);
+  opacity: var(--ink);
+  /*
+   * One animation for the whole life of a mark: pressed on, held, then gone.
+   * Its length comes from the component, which clears the mark from the page
+   * on the same figure, so the two cannot drift apart. The rotation stays on
+   * the element, leaving the animation only the scale and the ink to carry.
+   */
+  animation: press var(--life) cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes press {
+  from {
+    opacity: 0;
+    scale: 1.35;
+  }
+
+  10% {
+    opacity: var(--ink);
+    scale: 1;
+  }
+
+  60% {
+    opacity: var(--ink);
+    /*
+     * The site's curve is front-loaded, which is right for the press and wrong
+     * for the fade — it would take most of the ink off in the first moment and
+     * leave a long tail at nothing. The going is even.
+     */
+    animation-timing-function: linear;
+  }
+
+  to {
+    opacity: 0;
+    scale: 1;
+  }
+}
+
+@media (max-width: 1199px) {
+  .stamp {
+    width: 56px;
+    height: 56px;
+  }
+}
+
+/* No press for a visitor who has asked for stillness; the mark is simply there. */
+@media (prefers-reduced-motion: reduce) {
+  .stamp {
+    animation: none;
+  }
+}

@@ -77,6 +77,12 @@
 html {
   /* The mosaic is the page; keep the black canvas behind any overscroll. */
   background-color: var(--color-canvas);
+  /*
+   * iOS inflates text in landscape unless told not to, which would undo the
+   * type scale the composition is built on.
+   */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
@@ -126,7 +132,10 @@ html.js [data-intro]:not([data-revealed]) {
  * The minimised navigation opens over the page on about and contact, where the
  * mark sits 120px down — the place the design gives it under a navigation in
  * the corner. Three pills will not stack in the 84px above it, so the mark
- * yields for as long as the navigation is open rather than being covered by it.
+ * yields for as long as the navigation is open rather than being covered by
+ * it. Only above the breakpoint: once the pages reflow the stack opens the
+ * band it sits in and pushes the mark down the page instead of covering it,
+ * and there is nothing to yield to.
  *
  * Keyed to data-revealed so it can only run once the entrance has finished
  * handing the element back to CSS: a transition declared while the entrance is
@@ -136,9 +145,11 @@ html.js [data-intro]:not([data-revealed]) {
   transition: opacity 320ms ease;
 }
 
-body:has([data-nav="overlay"]:hover) [data-mark],
-body:has([data-nav="overlay"]:focus-within) [data-mark] {
-  opacity: 0;
+@media (min-width: 1200px) {
+  body:has([data-nav="overlay"]:hover) [data-mark],
+  body:has([data-nav="overlay"]:focus-within) [data-mark] {
+    opacity: 0;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

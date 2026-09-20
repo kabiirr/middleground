@@ -41,18 +41,21 @@ export type Rect = {
   height: number;
 };
 
-/** Scales a single design pixel value to the current canvas. */
-export function scale(value: number) {
-  return `calc(${value} * var(--s))`;
-}
-
-/** Turns a design rect into absolute-positioning styles for the canvas. */
+/**
+ * Turns a design rect into the custom properties the stylesheets position
+ * from.
+ *
+ * Deliberately not `left`/`top`/`width`/`height` themselves: an inline
+ * declaration cannot be overridden by a media query, and below the desktop
+ * breakpoint the composition has to leave absolute layout altogether. Handing
+ * CSS the numbers instead lets it decide what to do with them at each width.
+ */
 export function toStyle({ x, y, width, height }: Rect) {
   return {
-    left: scale(x),
-    top: scale(y),
-    width: scale(width),
-    height: scale(height),
+    "--x": x,
+    "--y": y,
+    "--w": width,
+    "--h": height,
   };
 }
 

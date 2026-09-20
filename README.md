@@ -24,7 +24,11 @@ problem the roaming block solves on the alternate homepage, answered by the
 layout instead, which is why `/` runs with the roaming copy switched off.
 
 The navigation leads the panel, 36px from the top edge as on every other page,
-with the mark and the line below it. It is minimised to the page you are on,
+with the mark and the line below it. The mark is 120 design pixels across, and
+`--mark-size` and `--mark-top` on the panel are what place it: the line reads
+both and holds the same 190px below the mark's foot that the studio's name
+holds above its own line everywhere else, so resizing the mark moves the line
+with it. It is minimised to the page you are on,
 with the rest folding out below on hover — the form about and contact carry
 too; see below.
 
@@ -188,15 +192,69 @@ the place the design gives it under a navigation in the corner. Three pills
 will not fit in the 84px above it, so the mark yields while the navigation is
 open rather than being covered by it. It can only do that because the entrance
 hands opacity back to CSS when it finishes: the fade is keyed to
-`data-revealed`, so it cannot smear the arrival.
+`data-revealed`, so it cannot smear the arrival. Above the breakpoint only:
+once the pages reflow the stack opens the band it stands in and pushes the
+mark down rather than covering it, so there is nothing to yield to.
 
-Two arrangements the minimised form cannot serve:
+### Where there is nothing to hover with
 
-- **A touch screen has no hover**, and tapping a pill navigates rather than
-  opening the stack — so under `(hover: none)` it stands open.
-- **Below the desktop breakpoint** the pages reflow and the header becomes a
-  sticky strip, where a stack three pills deep would hold a fifth of the
-  screen. There every page shows the full row.
+Under `(max-width: 1199px), (hover: none)` the same stack opens on a tap of
+the pill for the page you are on. Three things follow from that:
+
+- **That pill becomes a button.** Left a link it would only lead back to the
+  page already on screen, and the tap meant to open the stack would reload it.
+  It carries `aria-expanded` and keeps `aria-current="page"`.
+- **It closes as a menu should** — on Escape, on a pointer down anywhere
+  outside it, and on the way to whichever page you pick.
+- **Folded is the enhancement; open is the floor.** Nothing can set
+  `data-open` without JavaScript and there is no hover to fall back on, so
+  `html:not(.js)` leaves the stack open. That selector needs `:global` — in a
+  CSS module a bare `.js` is hashed like any other local class, and the rule
+  would match everywhere instead of nowhere.
+
+The query is read in an effect rather than during render, so the server's
+markup and the client's first pass agree and the form settles a frame later.
+
+## Below the breakpoint
+
+The composition is built at 1440 and zooms with `--s`. Below 1200px that
+zoom would push type past readability, so `--s` returns to literal pixels and
+the pages reflow: the mosaic into a 3 / 2 / 1 column masonry, the panel and the
+identity band into full-width bands above it, the navigation into a single
+centred row.
+
+Four things that reflow depends on:
+
+- **Tiles are placed from custom properties, not inline styles.** Each carries
+  its design rect as `--x --y --w --h` and the stylesheet decides what to do
+  with them: absolute coordinates on the desktop canvas, `inset: auto` and an
+  `aspect-ratio` once they simply flow. Written as inline `left`/`top` they
+  could not be overridden by a media query at all — the reflow rules were
+  there long before they had any effect, and the mosaic ran 1440px wide inside
+  a 390px screen.
+- **The page is a column, and full height means what is left.** The header
+  stops floating and takes its place in the flow below the breakpoint, so a
+  screen asking for `100svh` overflows by exactly the header's height — enough
+  to push "Reach out", anchored to the bottom edge, off the bottom of the
+  screen. The page is a flex column instead and hands what remains to the
+  routed content, which needs no figure for the header and cannot drift from
+  it.
+- **Targets clear 44px.** The pills are the only controls on the site, and
+  below 480px they tighten across but never below the smallest size a finger
+  can reliably hit.
+- **The stack stays a stack, and opens on a tap.** See *Where there is
+  nothing to hover with* above. It opens the band it stands in rather than
+  covering the composition, so the page steps down while the menu is open and
+  returns when it closes.
+- **The bands hold more air.** The mark, the line and the grid below them are
+  further apart than the desktop proportions would give at this width: 72px
+  above the mark, 56px above the line, and 88px before the mosaic starts.
+
+The viewport is `viewport-fit=cover`, so the black canvas runs under a phone's
+cutout and `env(safe-area-inset-*)` reports real values — the header reads the
+side insets and the pages anchored to the bottom edge read the bottom one.
+Type that would otherwise be fixed at these widths is set with `clamp()`, and
+`text-size-adjust` stops iOS inflating it in landscape.
 
 ## About and contact
 
@@ -212,6 +270,32 @@ pinned to the bottom edge. At 1440 x 850 that
 resolves to exactly the Figma frame; on a taller window the composition still
 reads correctly.
 
+### Stamping the page
+
+Clicking either page anywhere that is not already doing something presses the
+studio's mark onto the spot, leaning a little either way, as a stamp does.
+`Stamps` holds them.
+
+- **It listens on its own parent, and lays nothing over it.** A sheet across
+  the page would take every pointer event the page beneath wants — the
+  marquee's hover on about, the address on contact. The layer the marks sit in
+  takes none at all.
+- **It knows what is not a click.** Anything with a job of its own — a link, a
+  button, a field — keeps its click. So does a drag of more than 8px across
+  the page, or a swipe down it, and so does the release at the end of
+  selecting a line of the copy.
+- **A mark lasts 2.6 seconds** — pressed on at 80% ink, held, then fading
+  away. One animation carries the whole span, and the component clears the
+  mark from the page on the same figure, so the two cannot drift apart. The
+  press takes the site's own curve; the fade is linear, since that curve is
+  front-loaded and would take most of the ink off in the first moment and
+  leave a long tail at nothing. Two dozen at once is a ceiling, for anyone
+  clicking faster than they fade.
+- **They are placed as a share of the surface**, not in pixels, so they hold
+  their spot if the window changes size while they are still there.
+
+Under `prefers-reduced-motion` the mark is simply there rather than pressed on.
+
 The about page's services strip is 2911px wide inside a 1440px frame, bleeding
 off both edges, so it is built as a continuously scrolling ticker. Hovering a
 phrase holds the strip still, fades its sister phrases back to half strength —
@@ -224,14 +308,11 @@ Pill positions live in `PILL_LAYOUT` in `src/data/site.ts`, measured from the
 design's hover state against that phrase's width, so they spread with whichever
 phrase they belong to.
 
-### Two things the design leaves open
+### One thing the design leaves open
 
 - The services strip's pills are drawn only for Identity Systems, and four of
   the six read "Research" — placeholder copy worth varying. The labels on the
   other two services are stand-ins; edit them in `services`.
-- The contact page lists social handles but no URLs, so only the email address
-  is linked. Add `href` values in `contactLinks` once the real profile URLs are
-  confirmed.
 
 ## Motion
 

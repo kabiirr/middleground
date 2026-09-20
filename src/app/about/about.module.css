@@ -62,9 +62,13 @@
 
 @media (max-width: 1199px) {
   .screen {
-    min-height: 100svh;
-    /* Clears the sticky header. */
+    /* What the page column leaves below the header, never more. */
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
     padding-top: 24px;
+    padding-bottom: env(safe-area-inset-bottom);
   }
 
   .monogram {
@@ -82,12 +86,14 @@
     max-width: 441px;
     margin: 48px auto 0;
     padding-inline: var(--gutter);
-    font-size: 18px;
+    font-size: clamp(16px, 4.4vw, 18px);
   }
 
   .marquee {
     position: static;
-    margin-top: 72px;
+    /* Holds the foot of the screen, wherever the copy above it ends. */
+    margin-top: auto;
+    padding-top: 72px;
     padding-bottom: 48px;
     /*
      * The strip is built entirely from `calc(<design px> * var(--s))`, so

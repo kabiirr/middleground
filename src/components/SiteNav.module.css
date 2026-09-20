@@ -26,11 +26,11 @@
 
 @media (max-width: 1199px) {
   /*
-   * No centre column to sit on once the pages reflow, and the header is a
-   * sticky strip rather than a floating one, so both forms sit to the right as
-   * the rest of the site's chrome does.
+   * The reflowed pages are centred compositions and the homepage carries its
+   * own navigation centred above them, so the row holds the centre line here
+   * too rather than splitting the site between two placements.
    */
-  .centre {
-    justify-content: flex-end;
+  .corner {
+    justify-content: center;
   }
 }

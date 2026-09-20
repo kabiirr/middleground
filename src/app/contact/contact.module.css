@@ -77,16 +77,25 @@
 
 @media (max-width: 1199px) {
   .screen {
-    min-height: 100svh;
+    /* What the page column leaves below the header, never more. */
+    flex: 1;
+    min-height: 0;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    /* Clear of the home indicator on an edge-to-edge phone. */
+    padding-bottom: env(safe-area-inset-bottom);
   }
 
+  /*
+   * The mark and the details centre themselves in whatever the headline
+   * leaves, through the auto margins either side of the pair. Centring the
+   * column instead would do nothing: the headline's own auto margin takes up
+   * all the free space first, and the rest would sit at the top.
+   */
   .monogram {
     position: static;
     left: auto;
-    margin: 0 auto 40px;
+    margin: auto auto 40px;
     width: 80px;
     height: 80px;
   }
@@ -96,12 +105,14 @@
     top: auto;
     left: auto;
     width: auto;
+    margin-bottom: auto;
     padding-inline: var(--gutter);
   }
 
   .details li {
-    font-size: 16px;
-    line-height: 35px;
+    font-size: clamp(14px, 4.1vw, 16px);
+    /* Loosens with the type rather than holding a desktop figure. */
+    line-height: 2.2;
   }
 
   .headline {

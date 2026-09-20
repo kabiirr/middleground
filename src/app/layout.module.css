@@ -51,12 +51,33 @@
     --s: 1px;
   }
 
+  /*
+   * The header stops floating and takes its own place in the flow, so a page
+   * asking for 100svh would overflow by exactly the header's height — enough
+   * to push whatever is anchored to the bottom edge off the screen. The page
+   * becomes a column instead and hands what is left to the routed content,
+   * which needs no figure for the header's height and cannot drift from it.
+   */
+  .page {
+    display: flex;
+    flex-direction: column;
+    min-height: 100svh;
+  }
+
+  .page > main {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+
   .header {
     position: sticky;
     top: 0;
     left: auto;
     right: auto;
-    padding: var(--gutter);
+    /* Clear of the rounded corners and cutouts on a phone held sideways. */
+    padding: var(--gutter) max(var(--gutter), env(safe-area-inset-right))
+      var(--gutter) max(var(--gutter), env(safe-area-inset-left));
     /* Keeps the pills legible as content scrolls beneath them. */
     background: linear-gradient(
       to bottom,
