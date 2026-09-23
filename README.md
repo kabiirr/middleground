@@ -24,11 +24,23 @@ problem the roaming block solves on the alternate homepage, answered by the
 layout instead, which is why `/` runs with the roaming copy switched off.
 
 The navigation leads the panel, 36px from the top edge as on every other page,
-with the mark and the line below it. The mark is 120 design pixels across, and
-`--mark-size` and `--mark-top` on the panel are what place it: the line reads
-both and holds the same 190px below the mark's foot that the studio's name
-holds above its own line everywhere else, so resizing the mark moves the line
-with it. It is minimised to the page you are on,
+with the mark, the line and a way on below it. The mark is 120 design pixels
+across, and `--mark-size`, `--mark-top` and `--line-gap` on the panel are what
+place everything under it: the line reads all three and holds `--line-gap`
+below the mark's foot — 190px, the same the studio's name holds above its own
+line everywhere else — so resizing the mark moves the line with it.
+
+The line and the CONTACT US pill sit in one column running from the line's
+place down to 56px off the foot of the panel, the pill taking whatever space
+is left over. They cannot be placed independently: the line is measured down
+from the top and the pill up from the bottom, and on a short window the two
+would meet in the middle. Held in a column, the pill follows the line down
+instead, never closer than 40px to it.
+
+Past a certain ratio even that runs out of room, so beyond 1440 / 780 the mark
+comes up to 180 and the gap below it closes to 150 — the same composition,
+tighter. A ratio rather than a height, because the panel scales with the
+width: a tall enough window at 1440 is a short one at 1920. It is minimised to the page you are on,
 with the rest folding out below on hover — the form about and contact carry
 too; see below.
 
@@ -41,10 +53,12 @@ the Figma frame `Homepage`
 ([node 2056:2](https://www.figma.com/design/MCws2TSRqHQPUcELEVfnRx/Untitled--Copy-?node-id=2056-2)).
 
 The layout has since been regularised on top of that frame: the five columns are
-evenly spaced, and **every gap is 24px** — between columns, between tiles, and at
-the join where the page loops. Column width falls out of that (`(1440 - 2×24 -
-4×24) / 5 = 259.2`), and all five columns are built to the same total height, so
-no column finishes short and opens a wider gap at the seam.
+evenly spaced, and **every gap is 40px** — above, below and either side of every
+piece, and at the join where the page loops. Column width falls out of that
+(`(1440 - 2×40 - 4×40) / 5 = 240`), and all five columns are built to the same
+total height, so no column finishes short and opens a wider gap at the seam.
+`GUTTER` in `src/data/design.ts` is the only number to change to open the grid
+up or close it; everything else is measured from it.
 
 Tiles are stored as five column stacks in `src/data/projects.ts` and positioned
 absolutely, with artwork applied in reading order. The canvas height is the
@@ -59,10 +73,37 @@ factor defined in `src/app/layout.module.css`:
 - above that the whole composition zooms in step, preserving every proportion,
   capped at 1920px;
 - below 1200px the zoom would push type past readability, so `--s` returns to
-  `1` and the mosaic reflows into a 3 / 2 / 1 column masonry.
+  `1` and the mosaic reflows into a 3 / 2 column masonry.
 
 `--s` measures its own container (`100cqi`) rather than the viewport, so the
 scrollbar never pushes the mosaic into horizontal overflow.
+
+A tile is a frame and a title: the frame takes the height the grid gives it
+less a 26px band, and the title sits in that band underneath. Giving the band
+up out of the frame rather than adding it below keeps the grid's rhythm exactly
+as drawn — a title that added height would push every tile into the one below
+it, and on the desktop canvas, where tiles are placed at absolute coordinates,
+they would simply overlap.
+
+Clicking a tile opens its artwork over the page, whole rather than cropped to
+the grid. `ArtworkProvider` wraps the mosaic and holds the one piece that can
+be open at a time; the overlay has to sit above the grid rather than inside
+the tile it came from, which crops its own artwork by definition. A few things
+it has to get right:
+
+- **It is a button, not a link.** There is no page to go to, and a link would
+  say there was. A tile with an `href` still leads to its case study instead.
+- **Only the first pass is interactive.** The duplicate that makes the loop
+  seamless is hidden from screen readers, and leaving buttons in it would put
+  a second set of every tile in the tab order.
+- **Escape, the scrim and the close pill all shut it**, focus moves to the
+  close pill on the way in and back to the tile on the way out, and the page
+  behind is held still — through Lenis, which drives the scrolling here, since
+  `overflow: hidden` alone would leave it running underneath.
+
+The 40px is the same in both directions and stays that way while the page
+moves: the title hangs in the gutter rather than taking a band out of the foot
+of its tile, and the columns ride as whole blocks rather than tile by tile.
 
 Each tile carries a `data-node-id` matching its Figma node, so any tile on the
 page can be traced back to the design.
@@ -171,6 +212,15 @@ One component, in two arrangements, 36px from the top on every page.
 - **The alternate homepage** keeps the row its frame draws, ending 36px from
   the right edge, floating over the top of the mosaic.
 
+A pill is filled white, and the one for the page you are on stands down to a
+tenth of it — the only pill that leads nowhere is the quiet one. Its label
+turns over with it, black on a filled pill and white on the quiet one, since
+black on a tenth of white would be all but unreadable. The pointer warms a
+pill to the design's #efefe9, but never the page you are on: that rule sits
+after the hover rule at the same weight, so hovering where you already are
+leaves it as it is — and on a touch screen that pill is the button that opens
+the stack.
+
 Each pill is as wide as its own label and the 14px of padding either side —
 nothing states a width. The design draws an index on the active pill, **01** or
 **02**, and sets the three active widths by hand to hold it; both are dropped
@@ -181,7 +231,7 @@ at the design width.
 
 The header is a strip running the full width between the 36px margins, so the
 stack can sit on the centre line while the row still ends at the right. It is
-inert — without that it would swallow hovers meant for the mosaic beneath it.
+inert — without that it would swallow clicks meant for the mosaic beneath it.
 
 The pill you are on leads the stack wherever it falls in the list. Left in
 place, the items above it would grow as the rest unfolded and push it down the
@@ -219,7 +269,7 @@ markup and the client's first pass agree and the form settles a frame later.
 
 The composition is built at 1440 and zooms with `--s`. Below 1200px that
 zoom would push type past readability, so `--s` returns to literal pixels and
-the pages reflow: the mosaic into a 3 / 2 / 1 column masonry, the panel and the
+the pages reflow: the mosaic into a 3 / 2 column masonry, the panel and the
 identity band into full-width bands above it, the navigation into a single
 centred row.
 
@@ -256,19 +306,147 @@ side insets and the pages anchored to the bottom edge read the bottom one.
 Type that would otherwise be fixed at these widths is set with `clamp()`, and
 `text-size-adjust` stops iOS inflating it in landscape.
 
-## About and contact
+## About
 
-Both are built from their Figma frames — about
-([node 2058:46](https://www.figma.com/design/MCws2TSRqHQPUcELEVfnRx/Untitled--Copy-?node-id=2058-46))
-and contact
-([node 2058:73](https://www.figma.com/design/MCws2TSRqHQPUcELEVfnRx/Untitled--Copy-?node-id=2058-73)) —
-and share the `--s` scale and the homepage's navigation.
+A long scroll, built from its own Figma frame
+([node 2075:2](https://www.figma.com/design/MCws2TSRqHQPUcELEVfnRx/Untitled--Copy-?node-id=2075-2)),
+1440 x 2267: a statement, two columns beneath it, what the studio does, who
+leads the work, and an invitation at the foot.
 
-They anchor rather than fix their height: the screen fills the viewport, the
-monogram and copy hang off the top, and the oversized display type stays
-pinned to the bottom edge. At 1440 x 850 that
-resolves to exactly the Figma frame; on a taller window the composition still
-reads correctly.
+It is placed rather than flowed, on the same `--s` scale as everything else,
+because the design overlaps the CONTACT US pill and "Get in touch" at the
+foot. Below the breakpoint they come apart and the page becomes a single
+column, with the display type sized to the viewport rather than the frame.
+
+The frame also sets the words "Creative Director" at 146px behind the
+portrait; they are left out here.
+
+Three things in it are worth knowing:
+
+- **The disciplines are one run of type in two voices** — the sans in bone,
+  the serif italic in grey — rather than five authored rows. A slash offers no
+  line break of its own and a discipline holds together, so left alone the run
+  is a single unbreakable word that overshoots its column by 500px. A `<wbr>`
+  after each discipline is the only break the run allows, and with it the five
+  lines fall exactly where the design sets them: greedy wrapping in 905px
+  reproduces the frame's own composition.
+- **"Get in touch" is outlined, not filled.** The design gives the text a
+  transparent fill and lets its stroke carry it, which is `-webkit-text-stroke`
+  here. The stroke scales with `--s` so it stays a hairline at any width.
+- **The mark leads the page**, turning in the middle of it as it does
+  everywhere else. The frame also hangs a second one in the top right corner,
+  at an angle; it is left out here.
+
+That corner is where `public/monogram.svg` was exported from, so the artwork
+came out carrying the frame's -113.42° with it — which left the mark lying on
+its side anywhere it is shown still, the stamps most of all. The file turns it
+upright, M at the top and G at the foot.
+
+The portrait is the one photograph on the site. Figma exports it at 2048px
+square and 4MB; it is resized to 1500px and saved as a JPEG, since it has no
+transparency, and served through `next/image` from there.
+
+### The invitation carries a light
+
+Move a pointer into the band at the foot of the page and the cursor is
+replaced by the CONTACT US pill itself, which carries a light that fills in
+the outlined "Get in touch" wherever it passes. `Torch` drives it.
+
+The pill used to sit on the page and travel to meet the pointer, which left it
+chasing the cursor it was supposed to be. It is the cursor now: drawn at the
+pointer exactly, taking no clicks of its own, and gone the moment the pointer
+leaves. The section itself is the link, so wherever the pointer is when it
+decides, it lands on the same place — and the link reads as its own words
+rather than as a bare target laid over the page.
+
+- **Whether the pointer is inside is measured, not listened for.** The
+  events come off `window` and the section is compared against the pointer's
+  own coordinates, so nothing laid over the section can swallow a move and a
+  cursor that was already inside before the page settled is noticed anyway.
+  The same check runs on scroll: the section can arrive under a cursor that
+  never moved, which fires no enter and no leave.
+- **The section is its own ground**, starting below the portrait at 1860 —
+  the portrait ends at 1822. Lit from anywhere on the page instead, the pill
+  flies up out of the invitation and the borrowed cursor spills into the
+  section above it, which is not what either is for.
+- **It holds the pointer through a scroll.** The target is recomputed every
+  frame from where the pill's own place has got to, so scrolling the page
+  underneath a still cursor leaves the pill where the cursor is rather than
+  carrying it along with the page.
+- **A touch screen keeps the pill where the design puts it.** There is no
+  cursor to replace, so the one at the foot of the page stands, and it is
+  hidden only under `(min-width: 1200px) and (hover: hover)` — otherwise the
+  invitation would have nothing to press.
+- **The lit line is a second copy of the words**, filled rather than outlined
+  and masked to a circle around the torch. A mask can reveal one layer over
+  another, but it cannot fill in a stroke.
+- **The band is a box around the words.** The section was `inset: 0` — the
+  whole 2267px page — where a hover would have meant a hover on everything.
+
+Desktop only, under `(min-width: 1200px) and (hover: hover)`: there is no
+pointer to hand the pill to on a touch screen, and below the breakpoint the
+foot of the page is a plain column with nothing to shine along.
+
+### The disciplines answer to the pointer
+
+The same arrangement as the invitation, with two differences: the pill reads
+BOOK A CALL, and instead of a light there is a fill — the discipline under the
+pointer goes to white while the rest hold their grey. The slash after it does
+not: it is punctuation between two disciplines and belongs to neither.
+
+That fill is plain CSS `:hover`, which needs the words themselves to be the
+topmost thing under the pointer — so the whole run sits inside the link rather
+than under a sheet laid across it. The section above it, which holds the
+portrait, was `inset: 0` and therefore the topmost thing at every point below
+it: the disciplines are higher up the page but earlier in the markup, so a
+pointer over them was landing on that instead and nothing filled. It is a box
+around its own three pieces now, 1308 to 1822.
+
+Once the pages reflow the disciplines are a list to read rather than something
+to press: no cursor to say where a word leads, so the link stops taking taps.
+
+### Reading the portrait in blocks
+
+Hovering it holds a pixelated frame of the same photograph over the original,
+behind a window that follows the cursor. `PortraitReveal` drives it.
+
+- **The window is cut to the picture's own grid.** It steps block by block
+  rather than gliding, and its edges land on block edges — a window that
+  sliced a block in half would give the whole thing away as an overlay. The
+  grid was measured off the file rather than guessed: the blocks run 45px in
+  a 960px square, starting 6px in, found by autocorrelating the mean
+  column-to-column difference. The image carries enough grain that counting
+  edges directly returns the noise instead.
+- **Where the grid falls is read back at run time.** The frame is filled with
+  `object-fit: cover`, so the picture is scaled to the longer side and the
+  overflow cropped evenly; the component recomputes the cell size and the
+  grid's origin from the live box, which is what keeps the window aligned at
+  any width rather than only at 1440.
+- **Two mask layers, no gradient stops**: a core five blocks square at full
+  strength and a ring one block wider all round at 38%, which the default
+  compositing adds together. Both counts are odd, so the two squares sit on
+  the same grid, and the reveal falls away in whole blocks instead of
+  feathering through them.
+- **The pointer writes, CSS reads.** The block being pointed at goes onto the
+  wrapper as `--gx`, `--gy` and `--cell`, and the mask on the layer inside
+  reads them by inheritance. Nothing re-renders: a pointer reports far more
+  often than React should be asked to draw, and a mask position is a paint
+  rather than a layout. Writes are held to one a frame through
+  `requestAnimationFrame`, with the first going straight through so the
+  window is in place when it opens.
+- **The defaults belong on the wrapper**, not on the layer that reads them: a
+  `--gx` declared beside the mask shadows the one the pointer writes above it,
+  and the window sits in the middle for ever.
+- **There is nothing to follow on a touch screen**, so under `(hover: none)`
+  the layer is not there at all and the portrait stands as it is.
+
+## Contact
+
+Built from its Figma frame
+([node 2058:73](https://www.figma.com/design/MCws2TSRqHQPUcELEVfnRx/Untitled--Copy-?node-id=2058-73)),
+on the same scale. It anchors rather than fixes its height: the mark and the
+details centre themselves in what is left, and "Reach out" stays pinned to the
+bottom edge at any window height.
 
 ### Stamping the page
 
@@ -277,42 +455,45 @@ studio's mark onto the spot, leaning a little either way, as a stamp does.
 `Stamps` holds them.
 
 - **It listens on its own parent, and lays nothing over it.** A sheet across
-  the page would take every pointer event the page beneath wants — the
-  marquee's hover on about, the address on contact. The layer the marks sit in
-  takes none at all.
+  the page would take every pointer event the page beneath wants — the address
+  on contact, the artwork on about. The layer the marks sit in takes none at
+  all.
 - **It knows what is not a click.** Anything with a job of its own — a link, a
   button, a field — keeps its click. So does a drag of more than 8px across
   the page, or a swipe down it, and so does the release at the end of
   selecting a line of the copy.
-- **A mark lasts 2.6 seconds** — pressed on at 80% ink, held, then fading
-  away. One animation carries the whole span, and the component clears the
-  mark from the page on the same figure, so the two cannot drift apart. The
-  press takes the site's own curve; the fade is linear, since that curve is
-  front-loaded and would take most of the ink off in the first moment and
-  leave a long tail at nothing. Two dozen at once is a ceiling, for anyone
-  clicking faster than they fade.
+- **A mark lasts 2.6 seconds** — pressed on at 80% ink, held flat, then
+  rolled off the page. The component clears it on the same 2.6 seconds, so
+  the animation and the cleanup cannot drift apart.
+- **It peels because it bends.** A mark is not one image but ten strips, each
+  hinged on the foot of the one above it, so their turns accumulate down the
+  sheet into a roll. They are nested rather than laid side by side: nesting is
+  what accumulates the turns, where siblings would each have to be told the
+  sum of every turn before it. The free end goes first and the roll travels up
+  towards the anchored top, as peeling does — a single turn applied to all ten
+  at once curves the sheet from both ends like something being rolled, not
+  peeled.
+- **Under the ink is the sheet it sits on**: a disc the size of the mark at 7%
+  white, painted from the same background box as the artwork so every strip
+  samples the same band of both. Flat it disappears inside the mark's own ring;
+  rolling, it is what gives the curl a body, and where the roll doubles over
+  itself the faces stack and the fold catches the light. Line art alone has
+  nothing to bend.
+- **Three animations, because they want three curves**: the press, the roll,
+  and the ink. The ink holds until 80% so the roll happens while there is
+  still something to see it by.
+- **A dozen at once is a ceiling**, for anyone clicking faster than they fade.
+  Each mark is twelve elements rather than one.
+
+Two rules govern the whole thing, both easy to fall foul of: `preserve-3d` has
+to be on every link in the chain, since one flat parent presses everything
+below it into a picture; and an `opacity` below 1 flattens the element it is
+set on, which is why the ink fades on the outer element and the roll lives
+inside it.
 - **They are placed as a share of the surface**, not in pixels, so they hold
   their spot if the window changes size while they are still there.
 
 Under `prefers-reduced-motion` the mark is simply there rather than pressed on.
-
-The about page's services strip is 2911px wide inside a 1440px frame, bleeding
-off both edges, so it is built as a continuously scrolling ticker. Hovering a
-phrase holds the strip still, fades its sister phrases back to half strength —
-as the design draws them — and pops that service's disciplines out around it as
-pills, which then trail the cursor, each at its own rate. Under
-`prefers-reduced-motion` the ticker never moves, the pills arrive without the
-travel, and the strip rests centred exactly where the design shows it.
-
-Pill positions live in `PILL_LAYOUT` in `src/data/site.ts`, measured from the
-design's hover state against that phrase's width, so they spread with whichever
-phrase they belong to.
-
-### One thing the design leaves open
-
-- The services strip's pills are drawn only for Identity Systems, and four of
-  the six read "Research" — placeholder copy worth varying. The labels on the
-  other two services are stand-ins; edit them in `services`.
 
 ## Motion
 
@@ -336,6 +517,7 @@ scroll position.
   animation and the route resolve have both finished. Only the look runs ahead:
   `aria-current` keeps reporting where the visitor actually is until the route
   commits, and a separate `data-active` carries the appearance.
+
 - **Scroll.** The homepage loops endlessly. The mosaic is rendered twice, one
   pass above the other; once the page has scrolled past the height of a single
   pass, the scroll position is moved back by exactly that distance. The second
@@ -353,16 +535,22 @@ scroll position.
   edges are deliberately close together, since that row butts against row one of
   the next pass — a ragged edge there would open a gap far wider than the
   mosaic's own rhythm. All five columns are therefore built to the same total
-  height, and the canvas carries no bottom margin, so the join is 24px like
+  height, and the canvas carries no bottom margin, so the join is 40px like
   every other gap.
 
-- **Parallax.** The five columns drift at different rates, measured from each
-  tile's position in the viewport rather than from overall scroll progress. That
-  is what keeps it seamless across the loop — at the wrap the duplicate tiles sit
-  exactly where the originals were, so they inherit the same offsets instead of
-  snapping to a new value. Desktop only.
-- **Hover.** The hovered tile scales its image while its neighbours recede and
-  the caption slides up.
+- **Parallax, by the column rather than by the tile.** Each column rides
+  against the scroll as one block, so every gap inside it stays exactly what
+  the grid set. It was a share of each tile's own height before, and since two
+  tiles in a column are rarely the same height the same share came to
+  different distances — the 40px between them stretched and closed as the page
+  moved, which is the one measurement the whole grid is built on. The ride is
+  a sine of the scroll position whose period divides the loop a whole number
+  of times, so the offsets match on both sides of the seam and nothing shifts
+  as the page wraps. Desktop only.
+- **Tiles answer to a click, not a pointer.** They once scaled under the
+  cursor while their neighbours receded; the artwork opens full size instead,
+  and nothing moves on the way past. The cursor over a tile is `zoom-in`,
+  which is the whole of the invitation.
 - **Display type.** `SplitText` rolls each glyph up out of its own clipping
   mask, keeping the whole string as a single `aria-label`.
 
@@ -400,7 +588,7 @@ Tiles take either a still or a silent looping clip:
 ```ts
 { id: "r1-c1", rect: { ... }, media: { kind: "image", src: "/images/artemis-01.jpg" },
   alt: "Artemis — brand identity for a fossil identification app",
-  title: "ARTEMIS",        // shown on hover
+  title: "ARTEMIS",        // shown under the tile
   href: "/work/artemis" }  // optional case study link
 ```
 

@@ -10,8 +10,8 @@
   top: 0;
   bottom: 0;
   /* Column three of the same grid the mosaic is built on. */
-  left: calc(50% - 129.6 * var(--s));
-  width: calc(259.2 * var(--s));
+  left: calc(50% - 120 * var(--s));
+  width: calc(240 * var(--s));
   z-index: 2;
   pointer-events: none;
 
@@ -22,6 +22,25 @@
    */
   --mark-size: 120;
   --mark-top: 260;
+  /* What the studio's name holds above its line everywhere else on the site. */
+  --line-gap: 190;
+}
+
+/*
+ * A window wide for its height cannot hold the column at the design's
+ * spacing: the line is measured down from the top and the way on up from the
+ * bottom, and past this ratio they run out of room between them and the way
+ * on goes off the foot of the screen. The mark comes up and the gap below it
+ * closes, which is the same composition, tighter.
+ *
+ * Stated as a ratio rather than a height because the whole panel scales with
+ * the width — a tall enough window at 1440 is a short one at 1920.
+ */
+@media (min-width: 1200px) and (min-aspect-ratio: 1440 / 780) {
+  .panel {
+    --mark-top: 180;
+    --line-gap: 150;
+  }
 }
 
 /* Only the things themselves take the pointer, not the column around them. */
@@ -51,23 +70,51 @@
   height: calc(var(--mark-size) * var(--s));
 }
 
-.tagline {
+/*
+ * Everything below the mark, in one column running from the line's own place
+ * down to the foot of the panel.
+ *
+ * The line is measured from the top of the screen and the way on from the
+ * bottom, so on a short window the two would meet in the middle. Holding both
+ * in a column instead means the way on takes the space left over and, when
+ * there is none, simply follows the line down.
+ */
+.below {
   position: absolute;
   /*
    * The mark's foot plus the 190px the studio's name holds above its line
    * everywhere else on the site.
    */
-  top: calc((var(--mark-top) + var(--mark-size) + 190) * var(--s));
+  top: calc((var(--mark-top) + var(--mark-size) + var(--line-gap)) * var(--s));
+  bottom: calc(56 * var(--s));
   left: calc(50% - 117.5 * var(--s));
   width: calc(235 * var(--s));
+  display: flex;
+  flex-direction: column;
+  /* The least that may ever stand between the line and the way on. */
+  gap: calc(40 * var(--s));
+}
+
+.tagline {
   margin: 0;
   font-family: var(--font-sans);
   font-weight: 400;
-  font-size: calc(16 * var(--s));
-  line-height: 1.2;
-  letter-spacing: calc(-0.32 * var(--s));
+  font-size: calc(20 * var(--s));
+  line-height: 1.3;
+  letter-spacing: calc(-0.4 * var(--s));
   color: var(--color-ink);
   text-align: center;
+}
+
+/*
+ * The way on, at the foot of the column rather than under the line: the panel
+ * holds the full height of the screen, and putting it low leaves the mark and
+ * the line the middle to themselves.
+ */
+.cta {
+  margin-top: auto;
+  display: flex;
+  justify-content: center;
 }
 
 @media (max-width: 1199px) {
@@ -82,7 +129,7 @@
     width: auto;
     left: auto;
     /* The foot of the band is what separates the line from the grid. */
-    padding: 36px var(--gutter) 88px;
+    padding: max(12px, env(safe-area-inset-top)) var(--gutter) 88px;
   }
 
   .mark,
@@ -105,9 +152,22 @@
   }
 
   .tagline {
-    max-width: 34ch;
+    max-width: 32ch;
     margin: 56px auto 0;
-    font-size: clamp(15px, 4.1vw, 16px);
-    letter-spacing: -0.32px;
+    font-size: clamp(18px, 5vw, 20px);
+    letter-spacing: -0.4px;
+  }
+
+  /*
+   * No foot of the screen to sit at once the band scrolls with the page: the
+   * line and the way on take their places in the band itself, so the column
+   * that held them apart steps out of the way.
+   */
+  .below {
+    display: contents;
+  }
+
+  .cta {
+    margin-top: 40px;
   }
 }

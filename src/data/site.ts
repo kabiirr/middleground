@@ -1,7 +1,7 @@
 export const site = {
   name: "MiddleGround",
   tagline:
-    "MiddleGround is a brand design studio that exists to build brands that make a meaningful mark in the world.",
+    "MiddleGround is a brand design studio building brands that make a meaningful mark in the world.",
 };
 
 /** The homepage, which carries its own navigation inside the fixed panel. */
@@ -22,93 +22,45 @@ export const navItems: NavItem[] = [
   { label: "CONTACT US", href: "/contact" },
 ];
 
-/** Body copy on the about page (node 2058:57). */
-export const aboutParagraphs = [
-  "We are MiddleGround — a brand design studio built on a simple belief: great brand work happens where business ambition meets human connection.",
-  "We work full-service across strategy, visual and digital, partnering with established and emerging businesses to create clear, distinctive work that lasts.",
-  "We are highly craft-led, looking beyond the surface to build brands that make a meaningful mark in the world.",
+/*
+ * The about page (node 2075:2). A long scroll: a statement, two columns
+ * beneath it, the disciplines, who leads the work, and an invitation.
+ */
+
+/** The statement that opens the page (node 2075:5). */
+export const aboutStatement =
+  "We are MiddleGround — a brand design studio built on a simple belief: great brand work happens where business ambition meets human connection.";
+
+/** The two columns under the statement (nodes 2075:33 and 2075:34). */
+export const aboutColumns = [
+  "We work closely with founders and teams at defining moments, from ambitious new ventures to thoughtful reinventions. We ask the right questions, explore possibilities together, and then create something that feels true to the business, relevant to its audience, and built to move it forward.",
+  "We work full-service across strategy, visual and digital, creating work that positions our clients for the future, help them scale globally, and make a meaningful mark in the world.",
 ];
-
-export type ServicePill = {
-  label: string;
-  /** Fill colour, from the design. */
-  colour: string;
-  /** Position across the phrase, 0 to 1, so pills spread with its width. */
-  x: number;
-  /** Offset in design pixels from the top of the phrase's line. */
-  y: number;
-};
-
-export type Service = {
-  name: string;
-  /** Revealed around the phrase while it is hovered. */
-  pills: ServicePill[];
-};
 
 /**
- * Where the pills sit, taken from the design's hover state on "Identity
- * Systems" (nodes 2063:100 to 2063:116) and measured against that phrase's
- * 903px width. The same arrangement is reused for the other two services so
- * the strip reads consistently whichever one you are on.
+ * What the studio does (node 2075:35), read as one run of type. The design
+ * alternates two voices through it; here it is all the one, the serif italic
+ * in grey, and the slashes between are the only sans in the run.
  */
-const PILL_LAYOUT: Omit<ServicePill, "label">[] = [
-  { colour: "#efefe9", x: 0.0598, y: -14.8 },
-  { colour: "#72b1f9", x: 0.0686, y: 105.2 },
-  { colour: "#ffb893", x: 0.3078, y: 127.2 },
-  { colour: "#b0e3c2", x: 0.5625, y: 0.2 },
-  { colour: "#f2b6df", x: 0.7685, y: 127.2 },
-  { colour: "#efefe9", x: 0.8482, y: -22.8 },
+export const disciplines = [
+  "Brand Identity",
+  "Editorial",
+  "Packaging",
+  "Strategy",
+  "Websites",
+  "Tone of Voice",
+  "Naming",
+  "3D & Motion",
+  "Creative Direction",
+  "Typefaces",
 ];
 
-const pills = (...labels: string[]): ServicePill[] =>
-  PILL_LAYOUT.map((position, index) => ({
-    ...position,
-    label: labels[index] ?? "",
-  })).filter((pill) => pill.label !== "");
+/** Who leads the work (node 2075:51). */
+export const aboutLead =
+  "MiddleGround is led by brand designer and creative director Abel Idume, supported by a trusted network of specialists we bring in as each project requires. This keeps every engagement intentionally focused and hands-on, with Abel personally leading the work from start to finish.";
 
-/**
- * The marquee strip on the about page (node 2058:58).
- *
- * Identity Systems carries the six pills exactly as drawn — the design repeats
- * "Research" four times there, which reads as placeholder copy worth varying.
- * The sets on the other two services are stand-ins: the design does not specify
- * them, so edit the labels here.
- */
-export const services: Service[] = [
-  {
-    name: "Brand Strategy",
-    pills: pills(
-      "Research",
-      "Positioning",
-      "Naming",
-      "Messaging",
-      "Audit",
-      "Architecture",
-    ),
-  },
-  {
-    name: "Identity Systems",
-    pills: pills(
-      "Research",
-      "Naming",
-      "Positioning",
-      "Research",
-      "Research",
-      "Research",
-    ),
-  },
-  {
-    name: "Digital Experiences",
-    pills: pills(
-      "Research",
-      "Art Direction",
-      "Prototyping",
-      "Interface",
-      "Motion",
-      "Build",
-    ),
-  },
-];
+/** The invitation at the foot of the page (node 2075:4). */
+export const aboutInvitation = "Get in touch";
 
 export type ContactLink = {
   label: string;
@@ -126,7 +78,10 @@ export type ContactLink = {
  * page anyone can open.
  */
 export const contactLinks: ContactLink[] = [
-  { label: "hello@middleground.design", href: "mailto:hello@middleground.design" },
+  {
+    label: "Enquiries: hello@middleground.design",
+    href: "mailto:hello@middleground.design",
+  },
   { label: "IG: @by_middleground", href: "https://www.instagram.com/by_middleground" },
   { label: "x: @bymiddleground", href: "https://x.com/bymiddleground" },
   {

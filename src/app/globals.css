@@ -46,9 +46,20 @@
   --color-canvas: #000000;
   --color-tile: #d9d9d9;
   --color-ink: #ffffff;
+  /* The off-white the display type takes, and the grey of its second voice. */
+  --color-bone: #efefe9;
+  --color-muted: #787875;
   --color-pill: #ffffff;
   --color-pill-active: #efefe9;
   --color-pill-ink: #000000;
+  /*
+   * The pill for the page you are on, barely there against the canvas: it is
+   * where you already are rather than somewhere to go. Its label takes the
+   * page's own ink rather than the pill's — black on a tenth of white would
+   * be all but unreadable.
+   */
+  --color-pill-quiet: rgb(255 255 255 / 10%);
+  --color-pill-quiet-ink: var(--color-ink);
 
   --font-mono: "Cartograph CF", ui-monospace, "SF Mono", Menlo, monospace;
   --font-sans: "Articulat CF", ui-sans-serif, system-ui, -apple-system, sans-serif;

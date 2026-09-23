@@ -1,6 +1,7 @@
 /*
  * Node 2056:3 — logo and tagline in the centre column, centred on the first
- * screenful.
+ * screenful. The line falls in three across the column of its own accord,
+ * as the design has it, with about 24px to spare at its tightest.
  *
  * The logotype sits at the top of the block and the tagline at the foot, with
  * the space between them falling out of the block's height. For the fixed block
@@ -37,17 +38,6 @@
   line-height: 1.2;
   letter-spacing: calc(-0.32 * var(--s));
   color: var(--color-ink);
-  /*
-   * Reserves slack so the tagline breaks on the same words as the design.
-   *
-   * Only one break is a close call: "studio" must fall to line two. With it,
-   * line one measures 258.74px; the longest line that must still fit is line
-   * two at 246.63px. So any wrapping width between 247 and 258 yields the
-   * design's three lines — 256 sits in the middle of that window, well clear of
-   * sub-pixel rounding at any scale. No glyph moves: the text is left-aligned
-   * and every line is shorter than the reduced width.
-   */
-  padding-right: calc(3 * var(--s));
 }
 
 @media (max-width: 1199px) {
@@ -76,8 +66,6 @@
     margin-inline: auto;
     font-size: clamp(15px, 4.1vw, 16px);
     letter-spacing: -0.32px;
-    /* The slack that holds the desktop line breaks means nothing here. */
-    padding-right: 0;
   }
 }
 

@@ -70,14 +70,27 @@
     flex: 1;
   }
 
+  /*
+   * The homepage carries its own navigation inside the panel, so the header
+   * there has nothing in it — and an empty strip still holding its padding is
+   * 48px of nothing at the top of the page.
+   */
+  .header:empty {
+    display: none;
+  }
+
   .header {
     position: sticky;
     top: 0;
     left: auto;
     right: auto;
-    /* Clear of the rounded corners and cutouts on a phone held sideways. */
-    padding: var(--gutter) max(var(--gutter), env(safe-area-inset-right))
-      var(--gutter) max(var(--gutter), env(safe-area-inset-left));
+    /*
+     * Tight to the top, and clear of the rounded corners and cutouts on a
+     * phone — the inset is zero on anything without one.
+     */
+    padding: max(12px, env(safe-area-inset-top))
+      max(var(--gutter), env(safe-area-inset-right)) 12px
+      max(var(--gutter), env(safe-area-inset-left));
     /* Keeps the pills legible as content scrolls beneath them. */
     background: linear-gradient(
       to bottom,

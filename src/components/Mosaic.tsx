@@ -5,6 +5,7 @@ import Link from "next/link";
 import { CANVAS_WIDTH, COLUMN_X, toStyle } from "@/data/design";
 import { canvasHeight, tiles, type Tile } from "@/data/projects";
 
+import { ArtworkProvider, ArtworkTrigger } from "./ArtworkView";
 import { Identity } from "./Identity";
 import { MosaicMotion } from "./MosaicMotion";
 import { IdentityRelay } from "./IdentityRelay";
@@ -14,15 +15,15 @@ import styles from "./Mosaic.module.css";
 
 /**
  * Sizes hint for the responsive image loader: one fifth of the viewport on the
- * desktop mosaic, widening as it drops to three, two, then one column.
+ * desktop mosaic, widening as it drops to three columns and then two.
  */
 const IMAGE_SIZES =
-  "(max-width: 479px) 100vw, (max-width: 767px) 50vw, (max-width: 1199px) 33vw, 20vw";
+  "(max-width: 767px) 50vw, (max-width: 1199px) 33vw, 20vw";
 
 /** Tiles on the first screen are worth fetching eagerly; the rest are not. */
 const ABOVE_THE_FOLD = 5;
 
-/** Which of the five design columns a tile sits in, for the parallax drift. */
+/** Which of the five design columns a tile sits in. */
 function columnOf(tile: Tile) {
   return COLUMN_X.reduce(
     (best, x, index) =>
@@ -33,34 +34,24 @@ function columnOf(tile: Tile) {
   );
 }
 
-function TileContent({ tile, priority }: { tile: Tile; priority: boolean }) {
+/** The artwork, cropped to the frame the grid gives it. */
+function TileArtwork({ tile, priority }: { tile: Tile; priority: boolean }) {
   const { media } = tile;
 
-  if (!media) {
-    // No artwork supplied yet — the tile stays the grey placeholder from Figma.
-    return null;
-  }
+  // No artwork supplied yet — the frame stays the grey placeholder from Figma.
+  if (!media) return null;
 
-  return (
-    <>
-      {media.kind === "video" ? (
-        <TileVideo
-          className={styles.media}
-          src={media.src}
-          poster={media.poster}
-        />
-      ) : (
-        <Image
-          className={styles.media}
-          src={media.src}
-          alt={tile.alt ?? ""}
-          fill
-          sizes={IMAGE_SIZES}
-          priority={priority}
-        />
-      )}
-      {tile.title ? <p className={styles.caption}>{tile.title}</p> : null}
-    </>
+  return media.kind === "video" ? (
+    <TileVideo className={styles.media} src={media.src} poster={media.poster} />
+  ) : (
+    <Image
+      className={styles.media}
+      src={media.src}
+      alt={tile.alt ?? ""}
+      fill
+      sizes={IMAGE_SIZES}
+      priority={priority}
+    />
   );
 }
 
@@ -68,17 +59,27 @@ function MosaicTile({
   tile,
   priority,
   reveal,
+  interactive,
 }: {
   tile: Tile;
   priority: boolean;
   reveal: boolean;
+  /** The duplicate pass is scenery; only the first pass answers to anything. */
+  interactive: boolean;
 }) {
   const style = {
     ...toStyle(tile.rect),
     "--tile-ratio": `${tile.rect.width} / ${tile.rect.height}`,
   } as CSSProperties;
 
-  const content = <TileContent tile={tile} priority={priority} />;
+  const inside = (
+    <>
+      <span className={styles.frame}>
+        <TileArtwork tile={tile} priority={priority} />
+      </span>
+      {tile.title ? <span className={styles.caption}>{tile.title}</span> : null}
+    </>
+  );
 
   return (
     <div
@@ -92,12 +93,21 @@ function MosaicTile({
       data-reveal={reveal ? "" : undefined}
       data-revealed={reveal ? undefined : ""}
     >
+      {/*
+        A tile with a case study behind it leads there; one without opens its
+        artwork full size. A tile with neither — a placeholder, or the
+        duplicate pass — is just something to look at.
+      */}
       {tile.href ? (
         <Link href={tile.href} className={styles.link}>
-          {content}
+          {inside}
         </Link>
+      ) : interactive && tile.media ? (
+        <ArtworkTrigger tile={tile} className={styles.link}>
+          {inside}
+        </ArtworkTrigger>
       ) : (
-        content
+        inside
       )}
     </div>
   );
@@ -149,6 +159,7 @@ function Canvas({
           tile={tile}
           priority={isOriginal && index < ABOVE_THE_FOLD}
           reveal={isOriginal}
+          interactive={isOriginal}
         />
       ))}
     </div>
@@ -168,12 +179,14 @@ export function Mosaic({
   delay?: number;
 } = {}) {
   return (
-    <div className={styles.loop}>
-      <MosaicMotion delay={delay} />
-      <MosaicScroll />
-      {identity ? <IdentityRelay /> : null}
-      <Canvas copy={0} skipColumn={skipColumn} identity={identity} />
-      <Canvas copy={1} skipColumn={skipColumn} identity={identity} />
-    </div>
+    <ArtworkProvider>
+      <div className={styles.loop}>
+        <MosaicMotion delay={delay} />
+        <MosaicScroll />
+        {identity ? <IdentityRelay /> : null}
+        <Canvas copy={0} skipColumn={skipColumn} identity={identity} />
+        <Canvas copy={1} skipColumn={skipColumn} identity={identity} />
+      </div>
+    </ArtworkProvider>
   );
 }

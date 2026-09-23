@@ -1,0 +1,41 @@
+/*
+ * Built to the navigation's measurements — the same height, radius, padding
+ * and face — but filled rather than quiet. The navigation is where you are;
+ * this is something to do, and it should read as the one thing on the page
+ * asking to be pressed.
+ */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+  height: calc(39 * var(--s));
+  padding-inline: calc(14 * var(--s));
+  border-radius: calc(54 * var(--s));
+  background-color: var(--color-pill);
+  color: var(--color-pill-ink);
+  font-family: var(--font-mono);
+  font-weight: 300;
+  font-size: calc(16 * var(--s));
+  line-height: 1;
+  white-space: nowrap;
+  transition: background-color 560ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.pill:hover {
+  background-color: var(--color-pill-active);
+}
+
+@media (max-width: 1199px) {
+  .pill {
+    height: 44px;
+    padding-inline: 18px;
+    border-radius: 54px;
+    font-size: 15px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pill {
+    transition: none;
+  }
+}

@@ -23,14 +23,20 @@
  * rather than translate. This block plays the page's entrance, and GSAP clears
  * the individual transform properties when it takes over an element's
  * transform, so a translate used for centring would be wiped the moment the
- * animation finished. The 150 is the 80px lift plus half the block's height,
- * which is four lines at the 35px pitch set below.
+ * animation finished. The 154.5 is the 80px lift plus half the block's height:
+ * five lines of 22 and three gaps of 13, the address running to two.
  */
 .details {
   position: absolute;
-  top: calc(50% - 150 * var(--s));
-  left: calc(50% - 123.5 * var(--s));
-  width: calc(247 * var(--s));
+  top: calc(50% - 154.5 * var(--s));
+  /*
+   * Wider than the 247 the design draws. The address carries a label now and
+   * the two belong on one line: it measures 354.2, so the block is 360 and
+   * the line has room to stay whole. Centred by offset rather than translate,
+   * as everything that plays the page's entrance has to be.
+   */
+  left: calc(50% - 180 * var(--s));
+  width: calc(360 * var(--s));
   margin: 0;
   padding: 0;
   list-style: none;
@@ -42,13 +48,18 @@
   font-weight: 300;
   font-size: calc(16 * var(--s));
   /*
-   * The design sets the lines 35px apart cap to cap. Carrying that on
-   * line-height rather than a gap keeps the spacing identical in every browser,
-   * since it does not depend on trimming the font's own leading.
+   * The design sets the entries 35px apart cap to cap, which is carried here
+   * as a line height of 22 and 13 between entries rather than as one line
+   * height of 35 — so that an entry which does run to two lines holds together
+   * rather than reading as two.
    */
-  line-height: calc(35 * var(--s));
+  line-height: calc(22 * var(--s));
   color: var(--color-ink);
   text-transform: uppercase;
+}
+
+.details li + li {
+  margin-top: calc(13 * var(--s));
 }
 
 .details a {
@@ -110,9 +121,28 @@
   }
 
   .details li {
-    font-size: clamp(14px, 4.1vw, 16px);
+    /*
+     * Sized so the address and its label stay on one line at every width the
+     * page reflows to, rather than breaking the two apart.
+     */
+    font-size: clamp(11px, 3.9vw, 16px);
     /* Loosens with the type rather than holding a desktop figure. */
-    line-height: 2.2;
+    line-height: 1.5;
+  }
+
+  .details li + li {
+    margin-top: 11px;
+  }
+
+  /*
+   * The narrowest screens give the line the gutter as well: at 320 it is
+   * three pixels short of fitting, and the type is small enough already
+   * without taking it down again to save them.
+   */
+  @media (max-width: 479px) {
+    .details {
+      padding-inline: 16px;
+    }
   }
 
   .headline {

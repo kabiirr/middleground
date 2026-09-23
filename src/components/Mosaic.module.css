@@ -9,6 +9,11 @@
  * width and height come from the tile data, so the page lengthens on its own as
  * rows are appended.
  */
+/* The grid's own gutter, the same above, below and either side of a piece. */
+.loop {
+  --gap: calc(40 * var(--s));
+}
+
 .canvas {
   position: relative;
   width: calc(var(--canvas-width) * var(--s));
@@ -23,78 +28,79 @@
   top: calc(var(--y) * var(--s));
   width: calc(var(--w) * var(--s));
   height: calc(var(--h) * var(--s));
+}
+
+/*
+ * The artwork's own box, which is the whole tile. The title hangs below it in
+ * the gutter rather than taking a band out of the foot — a band would leave
+ * every piece 24px from its neighbour across and 50px from the one beneath,
+ * and the gutter is meant to read the same in both directions.
+ */
+.frame {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
   overflow: hidden;
   background-color: var(--color-tile);
 }
 
 /*
- * Both the hover transition and the dimming wait for the entrance to finish and
- * hand the tile back to CSS. Before that the tile's opacity is being written
- * inline every frame, which a CSS transition would only fight.
- */
-/*
  * A tile the studio's name is standing in for. visibility rather than opacity
- * alone: the hover rules also write opacity, and this has to win regardless.
+ * alone: the entrance writes opacity, and this has to win regardless.
  */
 .tile[data-covered] {
   visibility: hidden;
 }
 
-.tile[data-revealed] {
-  transition: opacity 420ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-/*
- * Hovering one tile pulls focus by receding the rest. Scoped with :has so it
- * costs nothing until a pointer is actually over a tile.
- */
-.canvas:has(.tile:hover .media) .tile[data-revealed]:not(:hover) {
-  opacity: 0.35;
-}
-
-/* Stills and clips are cropped to the tile identically. */
+/* Stills and clips are cropped to the frame identically. */
 .media {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 500ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* The image eases in behind a fixed tile edge. */
-.tile:hover .media,
-.link:focus-visible .media {
-  transform: scale(1.06);
-}
-
+/*
+ * Under the work it names, hung in the 24px gutter below it: six above the
+ * line and twelve for the line itself, which leaves six clear before the
+ * piece underneath.
+ */
 .caption {
   position: absolute;
-  inset-inline: 0;
-  bottom: 0;
-  padding: calc(14 * var(--s));
+  top: 100%;
+  left: 0;
+  right: 0;
+  padding-top: calc(6 * var(--s));
   margin: 0;
   font-family: var(--font-mono);
   font-weight: 300;
-  font-size: calc(13 * var(--s));
+  font-size: calc(12 * var(--s));
   line-height: 1;
+  letter-spacing: 0.02em;
   color: var(--color-ink);
-  background: linear-gradient(to top, rgb(0 0 0 / 0.72), transparent);
-  opacity: 0;
-  translate: 0 100%;
-  transition:
-    opacity 320ms ease,
-    translate 420ms cubic-bezier(0.22, 1, 0.36, 1);
+  text-align: left;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.tile:hover .caption,
-.link:focus-visible .caption {
-  opacity: 1;
-  translate: 0 0;
-}
-
+/*
+ * The whole tile — artwork and title — is the way into the piece full size.
+ * A button, not a link: there is no page to go to, and a link would say
+ * there was.
+ */
 .link {
   display: block;
   width: 100%;
   height: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: inherit;
+  cursor: zoom-in;
 }
 
 /*
@@ -112,42 +118,35 @@
      * rows would leave between them.
      */
     columns: 3;
-    column-gap: var(--gutter);
-    padding: var(--gutter);
+    column-gap: var(--gap);
+    padding: var(--gap);
   }
 
   .tile {
-    /* Not static: next/image fill is absolutely positioned within the tile. */
     position: relative;
     /* The design coordinates mean nothing once the tiles simply flow. */
     inset: auto;
     width: auto;
+    /* The frame carries the tile's proportions; the title hangs below it. */
     height: auto;
+    margin-bottom: var(--gap);
+    break-inside: avoid;
+  }
+
+  .frame {
     /* Set per tile from its Figma dimensions. */
     aspect-ratio: var(--tile-ratio);
-    margin-bottom: var(--gutter);
-    break-inside: avoid;
+    height: auto;
+  }
+
+  .caption {
+    padding-top: 6px;
+    font-size: 11px;
   }
 }
 
 @media (max-width: 767px) {
   .canvas {
     columns: 2;
-  }
-}
-
-@media (max-width: 479px) {
-  .canvas {
-    columns: 1;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .canvas:has(.tile:hover .media) .tile[data-revealed]:not(:hover) {
-    opacity: 1;
-  }
-
-  .caption {
-    translate: none;
   }
 }

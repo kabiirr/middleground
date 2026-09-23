@@ -39,7 +39,9 @@
   font-size: calc(16 * var(--s));
   line-height: 1;
   white-space: nowrap;
-  transition: background-color var(--nav-duration) var(--nav-ease);
+  transition:
+    background-color var(--nav-duration) var(--nav-ease),
+    color var(--nav-duration) var(--nav-ease);
 }
 
 .pill:hover {
@@ -47,12 +49,18 @@
 }
 
 /*
+ * The page you are on stands down to a tenth of white while the other two
+ * stay filled, so the one pill that leads nowhere is the quiet one.
+ *
  * Keyed to data-active rather than aria-current: the look leads the navigation
  * by the length of the page transition, while aria-current waits for the route
- * to actually commit.
+ * to actually commit. It sits after the hover rule and at the same weight, so
+ * hovering the page you are on leaves it as it is rather than filling it back
+ * in — on a touch screen that pill is the button that opens the stack.
  */
 .pill[data-active] {
-  background-color: var(--color-pill-active);
+  background-color: var(--color-pill-quiet);
+  color: var(--color-pill-quiet-ink);
 }
 
 @media (max-width: 1199px) {

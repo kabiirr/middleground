@@ -24,8 +24,8 @@ import {
 
 import styles from "./PageTransition.module.css";
 
-const OUT_DURATION = 0.28;
-const IN_DURATION = 0.5;
+const OUT_DURATION = 0.26;
+const IN_DURATION = 0.42;
 
 /** Safety net if the exit tween never reports back — see navigate(). */
 const PUSH_FALLBACK_MS = OUT_DURATION * 1000 + 250;
@@ -97,7 +97,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
       gsap.to(stage.current, {
         autoAlpha: 0,
         duration: OUT_DURATION,
-        ease: "power2.in",
+        ease: "power2.inOut",
         onComplete: go,
       });
       window.setTimeout(go, PUSH_FALLBACK_MS);
@@ -120,7 +120,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
       gsap.fromTo(
         element,
         { autoAlpha: 0 },
-        { autoAlpha: 1, duration: IN_DURATION, ease: EASE },
+        { autoAlpha: 1, duration: IN_DURATION, ease: "power2.out" },
       );
     }
 
@@ -145,10 +145,9 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
           {
             opacity: 1,
             y: 0,
-            duration: 0.9,
+            duration: 0.7,
             ease: EASE,
-            stagger: 0.12,
-            delay: 0.05,
+            stagger: 0.07,
             onComplete: () => markRevealed(targets),
           },
         );

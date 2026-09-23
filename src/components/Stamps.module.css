@@ -13,60 +13,149 @@
   --ink: 0.8;
 }
 
+/*
+ * A mark is a sheet cut into strips, each hinged on the one above it, so that
+ * it can roll off the page rather than swing off it flat. The outer element
+ * holds the position, the lean and the camera; the ink fades here too, because
+ * an opacity below 1 flattens the element it is set on, which would press the
+ * curl into a picture of itself.
+ */
 .stamp {
   position: absolute;
-  width: calc(64 * var(--s));
-  height: calc(64 * var(--s));
+  --size: calc(64 * var(--s));
+  /* Ten strips: enough that the roll reads as a curve rather than a fan. */
+  --strip: calc(var(--size) / 10);
+  /* How far each strip turns against the one above. Ten of these is the roll. */
+  --turn: 13deg;
+
+  width: var(--size);
+  height: var(--size);
   /* Centred on the point pressed, and never quite straight. */
   translate: -50% -50%;
   rotate: var(--lean);
   opacity: var(--ink);
+  /* Close enough to read as depth, far enough not to fish-eye a 64px mark. */
+  perspective: calc(var(--size) * 9);
+  animation: ink var(--life) linear forwards;
+}
+
+/*
+ * The sheet itself. It carries the press on the way in and, on the way out,
+ * lifts clear of the page as the roll takes hold. preserve-3d has to be on
+ * every level of the chain: one flat link and everything below it flattens.
+ */
+.sheet {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  animation:
+    press calc(var(--life) * 0.1) cubic-bezier(0.22, 1, 0.36, 1) forwards,
+    lift calc(var(--life) * 0.5) cubic-bezier(0.32, 0, 0.67, 0.4)
+      calc(var(--life) * 0.5) forwards;
+}
+
+/*
+ * A strip of the mark. Each hangs off the foot of the one above and turns on
+ * that edge, so the turns accumulate down the sheet into a roll — the paper
+ * lifting from its bottom edge while the top stays stuck to the page.
+ *
+ * The strips overlap by a whisker. Butted exactly they leave hairlines across
+ * the artwork wherever the browser rounds a fractional edge.
+ */
+.slice {
+  position: absolute;
+  left: 0;
+  top: var(--strip);
+  width: 100%;
+  height: calc(var(--strip) + 0.5px);
   /*
-   * One animation for the whole life of a mark: pressed on, held, then gone.
-   * Its length comes from the component, which clears the mark from the page
-   * on the same figure, so the two cannot drift apart. The rotation stays on
-   * the element, leaving the animation only the scale and the ink to carry.
+   * The ink, and under it the sheet it sits on: a disc the size of the mark,
+   * barely there against the black. Flat it is all but invisible; rolling, it
+   * is what gives the curl a body to read — and where the roll doubles over
+   * itself the two faces stack and the fold catches the light, as paper does.
+   *
+   * Both layers are sized and placed alike, so each strip samples the same
+   * band of the mark and of the sheet beneath it.
    */
-  animation: press var(--life) cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  background-image: url("/monogram.svg"),
+    radial-gradient(
+      circle at center,
+      rgb(255 255 255 / 7%) 0 49%,
+      transparent 50%
+    );
+  background-repeat: no-repeat;
+  background-size: var(--size) var(--size);
+  background-position: 0 calc(var(--i) * var(--strip) * -1);
+  transform-origin: top center;
+  transform-style: preserve-3d;
+  /*
+   * The free end goes first and the roll travels up towards the anchored top,
+   * as a sheet being peeled does — rather than the whole thing bending at once
+   * like something rolled from both ends.
+   */
+  animation: curl calc(var(--life) * 0.3) cubic-bezier(0.32, 0, 0.67, 0.3)
+    calc(var(--life) * 0.5 + (9 - var(--i)) * 22ms) forwards;
+}
+
+/* The top strip is the sheet's own top edge, and the only one that stays put. */
+.sheet > .slice {
+  top: 0;
 }
 
 @keyframes press {
   from {
+    transform: scale(1.35);
+  }
+
+  to {
+    transform: scale(1);
+  }
+}
+
+@keyframes lift {
+  to {
+    /* Off the page and away, following the roll rather than leading it. */
+    transform: translate3d(-3%, -12%, 18px) rotate3d(1, 0.3, 0, 22deg);
+  }
+}
+
+@keyframes curl {
+  to {
+    transform: rotateX(var(--turn));
+  }
+}
+
+@keyframes ink {
+  from {
     opacity: 0;
-    scale: 1.35;
   }
 
   10% {
     opacity: var(--ink);
-    scale: 1;
   }
 
-  60% {
+  80% {
     opacity: var(--ink);
-    /*
-     * The site's curve is front-loaded, which is right for the press and wrong
-     * for the fade — it would take most of the ink off in the first moment and
-     * leave a long tail at nothing. The going is even.
-     */
-    animation-timing-function: linear;
   }
 
   to {
     opacity: 0;
-    scale: 1;
   }
 }
 
 @media (max-width: 1199px) {
   .stamp {
-    width: 56px;
-    height: 56px;
+    --size: 56px;
   }
 }
 
-/* No press for a visitor who has asked for stillness; the mark is simply there. */
+/*
+ * No press and no roll for a visitor who has asked for stillness; the mark is
+ * simply there, and then it is not.
+ */
 @media (prefers-reduced-motion: reduce) {
-  .stamp {
+  .sheet,
+  .slice {
     animation: none;
   }
 }

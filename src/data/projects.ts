@@ -211,7 +211,7 @@ export const tiles: Tile[] = COLUMN_TILES.flat()
  * screen.
  *
  * A slot is simply a tile: the name takes that tile's exact footprint, so the
- * gutters around it are the grid's own 24px and it sits in the composition like
+ * gutters around it are the grid's own and it sits in the composition like
  * anything else. The logotype goes to the top and the tagline to the foot, with
  * the space between falling out of the tile's height — which is why a host only
  * has to be tall enough to hold both with a decent gap left over.

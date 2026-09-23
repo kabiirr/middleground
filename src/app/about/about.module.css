@@ -1,111 +1,557 @@
 /*
- * Node 2058:46. The design frame is 1440 x 850, so the screen is exactly that
- * tall at the design width — but it grows to fill a taller viewport, with the
- * monogram and copy anchored to the top and the marquee to the bottom, so the
- * composition holds at any window height.
+ * The about page (node 2075:2). A 1440 x 2267 frame, built the way the rest of
+ * the site is: every dimension is `calc(<design px> * var(--s))`, so at 1440
+ * it matches Figma pixel for pixel and zooms in step above it.
+ *
+ * Placed rather than flowed, because two things in the design overlap — the
+ * portrait stands in front of the words "Creative Director", and the pill sits
+ * on top of "Get in touch". Below the breakpoint it all reflows into a column;
+ * see the foot of this file.
  */
 .screen {
   position: relative;
-  min-height: max(calc(850 * var(--s)), 100svh);
-  overflow: hidden;
+  /* The frame's own height. The container is exactly 1440 design units wide. */
+  height: calc(2267 * var(--s));
+}
+
+/* The mark that leads the page, centred and turning as it does elsewhere. */
+.mark {
+  position: absolute;
+  left: calc(696.315 * var(--s));
+  top: calc(185 * var(--s));
+  width: calc(47.432 * var(--s));
+  height: calc(47.432 * var(--s));
+}
+
+/* What the studio is, in one statement. */
+.statement {
+  position: absolute;
+  left: calc(268 * var(--s));
+  top: calc(356 * var(--s));
+  width: calc(905 * var(--s));
+  margin: 0;
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: calc(48 * var(--s));
+  line-height: 1;
+  color: var(--color-bone);
+}
+
+/* How it works, in two columns beneath. */
+.columns {
+  position: absolute;
+  left: calc(270 * var(--s));
+  top: calc(617 * var(--s));
+  display: flex;
+  gap: calc(164 * var(--s));
+}
+
+.columns p {
+  width: calc(368 * var(--s));
+  margin: 0;
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: calc(16 * var(--s));
+  line-height: 1.5;
+  color: var(--color-ink);
+}
+
+.columns p:first-child {
+  letter-spacing: calc(-0.176 * var(--s));
 }
 
 /*
- * Centred by offset rather than by translate. These blocks play the page's
- * entrance, and GSAP clears the individual transform properties when it takes
- * over an element's transform — a translate used for centring would be wiped
- * the moment the animation finished, dropping the block half its width to the
- * right.
+ * The disciplines, and the ground the pointer has to be on for the cursor to
+ * change. A box around the words themselves rather than the width of the page:
+ * the cursor should answer to the list, not to the margins beside it.
  */
-.monogram {
+.services {
   position: absolute;
-  top: calc(120 * var(--s));
-  left: calc(50% - 39.7805 * var(--s));
-  width: calc(79.561 * var(--s));
-  height: calc(79.561 * var(--s));
+  left: calc(268 * var(--s));
+  top: calc(800 * var(--s));
+  width: calc(905 * var(--s));
+  height: calc(440 * var(--s));
+
+  /* Where the pointer is, in this section's own space. */
+  --tx: 50%;
+  --ty: 50%;
 }
 
-.copy {
+.servicesTarget {
   position: absolute;
-  top: calc(272 * var(--s));
-  left: calc(50% - 220.5 * var(--s));
-  width: calc(441 * var(--s));
+  inset: 0;
+  display: block;
+}
+
+/* What it does, in one voice: the serif italic, in grey. */
+.disciplines {
+  position: absolute;
+  left: 0;
+  top: calc(30 * var(--s));
+  width: 100%;
   margin: 0;
-  color: var(--color-pill-active);
-  font-family: var(--font-sans);
+  font-family: var(--font-display);
+  font-style: italic;
   font-weight: 400;
-  font-size: calc(18 * var(--s));
-  line-height: 1.5;
-  text-align: center;
+  font-size: calc(72.957 * var(--s));
+  line-height: 1.004;
+  color: var(--color-muted);
 }
 
-/* The design separates paragraphs by a single blank line. */
-.copy p {
-  margin: 0;
+/* A discipline holds together; the run breaks between them and nowhere else. */
+.discipline {
+  white-space: nowrap;
 }
 
-.copy p + p {
-  margin-top: 1.5em;
+/* The slashes are the sans, upright, as the design sets them. */
+.slash {
+  font-family: var(--font-sans);
+  font-style: normal;
 }
 
-.marquee {
+/*
+ * The one the pointer is on fills to white. Only the discipline itself: the
+ * slash is punctuation between two of them and belongs to neither.
+ */
+.discipline {
+  transition: color 240ms ease;
+}
+
+.discipline:hover {
+  color: var(--color-ink);
+}
+
+.discipline:hover .slash {
+  color: var(--color-muted);
+}
+
+/*
+ * Who leads the work: the rule, the portrait and the paragraph beside it,
+ * which all sit between 1308 and 1822.
+ *
+ * A box around them rather than the whole page. Laid over everything it would
+ * be the topmost thing at every point below it, and the disciplines above —
+ * later on the page but earlier in the markup — would never see a pointer.
+ */
+.director {
   position: absolute;
-  /*
-   * 633.8px from the top of an 850px frame, measured from the bottom instead —
-   * less the 40px of padding the strip carries for its pills, so the line of
-   * type still lands where the design puts it.
-   */
-  bottom: calc(44.2 * var(--s));
   left: 0;
   right: 0;
+  top: calc(1308 * var(--s));
+  height: calc(514 * var(--s));
 }
 
+.rule {
+  position: absolute;
+  left: calc(270 * var(--s));
+  top: 0;
+  width: calc(162.291 * var(--s));
+  height: calc(18.531 * var(--s));
+  background-color: var(--color-ink);
+}
+
+.portrait {
+  position: absolute;
+  left: calc(719 * var(--s));
+  top: 0;
+  width: calc(454 * var(--s));
+  height: calc(514 * var(--s));
+  /* In front of the title it interrupts. */
+  z-index: 1;
+  /*
+   * The block the window is centred on, and how big a block is. The pointer
+   * writes these here, and the mask on the layer inside reads them by
+   * inheritance — declared on the layer itself they would shadow what is
+   * written here and the window would never move. Until a pointer arrives
+   * they hold the middle.
+   */
+  --gx: 50%;
+  --gy: 50%;
+  --cell: calc(24 * var(--s));
+}
+
+/*
+ * The two frames, one over the other, and the window that shows the upper one.
+ * The wrapper carries the pointer's position as --x and --y; the mask reads
+ * them, so the window follows the cursor without anything re-rendering.
+ */
+.portraitReveal {
+  position: absolute;
+  inset: 0;
+}
+
+.portraitImage {
+  object-fit: cover;
+}
+
+.portraitPixels {
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 260ms ease;
+
+  /*
+   * The window, cut to the picture's own grid: a core of five blocks square
+   * at full strength, and a ring one block wider all round at less than half,
+   * so the reveal falls away in whole blocks instead of feathering through
+   * them. Both counts are odd, which is what keeps the two squares on the
+   * same grid as each other.
+   *
+   * Two mask layers, and the default compositing adds them — no gradient
+   * stops anywhere, so every edge lands exactly on a block edge.
+   */
+  --core: calc(5 * var(--cell));
+  --halo: calc(7 * var(--cell));
+  -webkit-mask-image:
+    linear-gradient(#000, #000),
+    linear-gradient(rgb(0 0 0 / 38%), rgb(0 0 0 / 38%));
+  mask-image:
+    linear-gradient(#000, #000),
+    linear-gradient(rgb(0 0 0 / 38%), rgb(0 0 0 / 38%));
+  -webkit-mask-size:
+    var(--core) var(--core),
+    var(--halo) var(--halo);
+  mask-size:
+    var(--core) var(--core),
+    var(--halo) var(--halo);
+  -webkit-mask-position:
+    calc(var(--gx) - var(--core) / 2) calc(var(--gy) - var(--core) / 2),
+    calc(var(--gx) - var(--halo) / 2) calc(var(--gy) - var(--halo) / 2);
+  mask-position:
+    calc(var(--gx) - var(--core) / 2) calc(var(--gy) - var(--core) / 2),
+    calc(var(--gx) - var(--halo) / 2) calc(var(--gy) - var(--halo) / 2);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+
+/* The window opens on arrival and closes on the way out. */
+.portrait[data-lit] .portraitPixels {
+  opacity: 1;
+}
+
+/* Nothing to follow on a touch screen; the portrait stands as it is. */
+@media (hover: none) {
+  .portraitPixels {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .portraitPixels {
+    transition: none;
+  }
+}
+
+.lead {
+  position: absolute;
+  left: calc(270 * var(--s));
+  top: calc(370 * var(--s));
+  width: calc(368 * var(--s));
+  margin: 0;
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: calc(16 * var(--s));
+  line-height: 1.5;
+  color: var(--color-ink);
+}
+
+/*
+ * The invitation at the foot, and the band the pointer has to be inside for
+ * the pill to come and meet it. A box around the words rather than the whole
+ * page, which is what the section used to be — a hover on that would have
+ * been a hover on everything.
+ */
+.invitation {
+  position: absolute;
+  left: 0;
+  right: 0;
+  /*
+   * Below the portrait, which ends at 1822 — the section has to be its own
+   * ground, or the light and the borrowed cursor follow the pointer up into
+   * the one above it.
+   */
+  top: calc(1860 * var(--s));
+  bottom: 0;
+
+  /* Where the pointer is, in this section's own space. */
+  --tx: 50%;
+  --ty: 50%;
+  --torch: calc(210 * var(--s));
+}
+
+/*
+ * Where a pill is carrying the cursor, the cursor itself stands down —
+ * on everything inside, not only the section. The link under the pointer is
+ * given `cursor: pointer` by the browser's own stylesheet, and a rule of its
+ * own beats a value inherited from above, so the arrow would otherwise stay
+ * alongside the pill.
+ */
+.invitation[data-lit],
+.invitation[data-lit] *,
+.services[data-lit],
+.services[data-lit] * {
+  cursor: none;
+}
+
+/*
+ * Outlined, as the design draws it: the fill is transparent and the letters
+ * are carried by their stroke alone.
+ */
+/* The link is the section: the words sit inside it, wherever they fall. */
+.invitationTarget {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+.invitationLine,
+.invitationLit {
+  position: absolute;
+  left: calc(11 * var(--s));
+  top: calc(130 * var(--s));
+  margin: 0;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 400;
+  font-size: calc(286.247 * var(--s));
+  line-height: 0.8;
+  color: transparent;
+  -webkit-text-stroke: calc(1.5 * var(--s)) var(--color-muted);
+  white-space: nowrap;
+}
+
+/*
+ * The lit copy, filled rather than outlined, and shown only inside the circle
+ * the pill carries. The mask is given in the band's coordinates, so the line's
+ * own offset within the band comes back off here.
+ */
+.invitationLit {
+  color: var(--color-bone);
+  -webkit-text-stroke: 0;
+  opacity: 0;
+  transition: opacity 320ms ease;
+  -webkit-mask-image: radial-gradient(
+    circle var(--torch) at calc(var(--tx) - 11 * var(--s))
+      calc(var(--ty) - 130 * var(--s)),
+    #000 0 22%,
+    rgb(0 0 0 / 45%) 55%,
+    transparent 78%
+  );
+  mask-image: radial-gradient(
+    circle var(--torch) at calc(var(--tx) - 11 * var(--s))
+      calc(var(--ty) - 130 * var(--s)),
+    #000 0 22%,
+    rgb(0 0 0 / 45%) 55%,
+    transparent 78%
+  );
+}
+
+.invitation[data-lit] .invitationLit {
+  opacity: 1;
+}
+
+/*
+ * The cursor itself, while the pointer is in the section: the same pill the
+ * design draws at the foot of the page, built to the navigation's own
+ * measurements and carried by the pointer.
+ */
+.cursor {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  height: calc(39 * var(--s));
+  padding-inline: calc(14 * var(--s));
+  border-radius: calc(54 * var(--s));
+  background-color: var(--color-pill);
+  color: var(--color-pill-ink);
+  font-family: var(--font-mono);
+  font-weight: 300;
+  font-size: calc(16 * var(--s));
+  line-height: 1;
+  white-space: nowrap;
+  /* Centred on the point it is standing in for. */
+  translate: calc(var(--tx) - 50%) calc(var(--ty) - 50%);
+  /* It is a cursor, not something to aim at. */
+  pointer-events: none;
+  opacity: 0;
+  scale: 0.85;
+  transition:
+    opacity 180ms ease,
+    scale 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Either section, while the pointer is inside it. */
+.invitation[data-lit] > .cursor,
+.services[data-lit] > .cursor {
+  opacity: 1;
+  scale: 1;
+}
+
+/* Where the design puts it, for anything without a cursor to replace. */
+.invitationPill {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(225 * var(--s));
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+}
+
+/*
+ * On a pointer device the pill is the cursor, so the one on the page would be
+ * a second of the same thing.
+ */
+@media (min-width: 1200px) and (hover: hover) {
+  .invitationPill {
+    display: none;
+  }
+}
+
+/*
+ * Below the desktop breakpoint the frame stops holding: --s returns to literal
+ * pixels and a 1440-wide composition would simply run off the side. The page
+ * becomes a single column, the overlaps come apart, and the display type sizes
+ * with the viewport rather than with the frame.
+ */
 @media (max-width: 1199px) {
   .screen {
-    /* What the page column leaves below the header, never more. */
-    flex: 1;
-    min-height: 0;
+    height: auto;
     display: flex;
     flex-direction: column;
-    padding-top: 24px;
-    padding-bottom: env(safe-area-inset-bottom);
+    padding: 0 var(--gutter) 96px;
+    padding-bottom: calc(96px + env(safe-area-inset-bottom));
   }
 
-  .monogram {
+  .mark {
     position: static;
-    left: auto;
-    margin: 32px auto 0;
-    width: 80px;
-    height: 80px;
+    width: 64px;
+    height: 64px;
+    margin: 24px auto 0;
   }
 
-  .copy {
+  .statement,
+  .columns,
+  .disciplines,
+  .rule,
+  .lead,
+  .invitationLine,
+  .invitationPill {
     position: static;
     left: auto;
+    top: auto;
     width: auto;
-    max-width: 441px;
-    margin: 48px auto 0;
-    padding-inline: var(--gutter);
-    font-size: clamp(16px, 4.4vw, 18px);
   }
 
-  .marquee {
+  /*
+   * Relative, not static: the portrait is filled by next/image, which places
+   * itself absolutely and would otherwise measure itself against the whole
+   * page rather than the frame it belongs in.
+   */
+  .portrait {
+    position: relative;
+    left: auto;
+    top: auto;
+    width: auto;
+    height: auto;
+  }
+
+  .director,
+  .invitation {
     position: static;
-    /* Holds the foot of the screen, wherever the copy above it ends. */
-    margin-top: auto;
-    padding-top: 72px;
-    padding-bottom: 48px;
-    /*
-     * The strip is built entirely from `calc(<design px> * var(--s))`, so
-     * scaling --s alone shrinks the type and the gaps between phrases together,
-     * keeping the design's proportions intact.
-     */
-    --s: 0.67px;
+    display: flex;
+    flex-direction: column;
   }
-}
 
-@media (max-width: 767px) {
-  .marquee {
-    --s: 0.42px;
+  .statement {
+    margin-top: 64px;
+    font-size: clamp(26px, 7.4vw, 44px);
+    line-height: 1.1;
+  }
+
+  .columns {
+    flex-direction: column;
+    gap: 28px;
+    margin-top: 48px;
+  }
+
+  .columns p {
+    width: auto;
+    font-size: clamp(15px, 4.1vw, 17px);
+  }
+
+  .disciplines {
+    margin-top: 0;
+    font-size: clamp(30px, 9vw, 64px);
+    line-height: 1.05;
+  }
+
+  .director {
+    margin-top: 80px;
+  }
+
+  .rule {
+    width: 120px;
+    height: 14px;
+  }
+
+  .portrait {
+    /* The frame the design gives it, at whatever width there is. */
+    aspect-ratio: 454 / 514;
+    margin-top: 28px;
+  }
+
+  .lead {
+    margin-top: 32px;
+    font-size: clamp(15px, 4.1vw, 17px);
+  }
+
+  .invitation {
+    align-items: center;
+    margin-top: 96px;
+  }
+
+  /* Nothing is carried anywhere down here; the line stands as it is drawn. */
+  .invitationLit,
+  .cursor {
+    display: none;
+  }
+
+  /*
+   * The disciplines are a list to read once the page reflows, not something to
+   * press: with no cursor to say where it leads, a tap on a word would be a
+   * surprise.
+   */
+  .services {
+    position: static;
+    left: auto;
+    top: auto;
+    width: auto;
+    height: auto;
+    margin-top: 64px;
+  }
+
+  .servicesTarget {
+    position: static;
+    inset: auto;
+    pointer-events: none;
+  }
+
+  /* The words and the pill take their own places in the column. */
+  .invitationTarget {
+    position: static;
+    inset: auto;
+  }
+
+  .invitationLine {
+    /* Stays on its one sweeping line, so it is sized to fit the narrowest. */
+    font-size: clamp(44px, 16vw, 180px);
+    -webkit-text-stroke-width: 1px;
+  }
+
+  .invitationPill {
+    margin-top: 32px;
   }
 }

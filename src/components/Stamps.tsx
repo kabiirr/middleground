@@ -11,8 +11,15 @@ import styles from "./Stamps.module.css";
  */
 const LIFE = 2600;
 
-/** A ceiling on the marks at once, should someone click faster than they fade. */
-const KEPT = 24;
+/**
+ * A ceiling on the marks at once, should someone click faster than they fade.
+ * Each is a stack of strips rather than a single image, so this is lower than
+ * it would otherwise need to be.
+ */
+const KEPT = 12;
+
+/** Strips a mark is cut into. Matches the divisor in the stylesheet. */
+const STRIPS = 10;
 
 /** How far the mark may lean either way, in degrees. Hand-stamped, not printed. */
 const LEAN = 14;
@@ -113,16 +120,9 @@ export function Stamps() {
   return (
     <div ref={layer} className={styles.layer} aria-hidden="true">
       {stamps.map((stamp) => (
-        /* The mark is an SVG, which next/image would not optimise anyway. */
-        /* eslint-disable-next-line @next/next/no-img-element */
-        <img
+        <div
           key={stamp.id}
           className={styles.stamp}
-          src="/monogram.svg"
-          alt=""
-          width={80}
-          height={80}
-          draggable={false}
           style={
             {
               left: `${stamp.x}%`,
@@ -131,8 +131,32 @@ export function Stamps() {
               "--life": `${LIFE}ms`,
             } as React.CSSProperties
           }
-        />
+        >
+          <div className={styles.sheet}>
+            <Strip index={0} />
+          </div>
+        </div>
       ))}
+    </div>
+  );
+}
+
+/**
+ * One strip of the mark, holding the next inside it.
+ *
+ * Nested rather than laid side by side: each strip turns against the one above
+ * it, and nesting is what makes those turns accumulate into a roll. Laid out
+ * as siblings, each would have to be told the sum of every turn before it.
+ */
+function Strip({ index }: { index: number }) {
+  if (index >= STRIPS) return null;
+
+  return (
+    <div
+      className={styles.slice}
+      style={{ "--i": index } as React.CSSProperties}
+    >
+      <Strip index={index + 1} />
     </div>
   );
 }

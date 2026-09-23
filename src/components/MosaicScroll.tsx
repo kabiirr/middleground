@@ -4,21 +4,31 @@ import { useEffect } from "react";
 
 import { gsap, prefersReducedMotion, scroller } from "@/lib/motion";
 
-/** Drift per column, as a share of tile height, giving the mosaic depth. */
-const COLUMN_DRIFT = [-9, 4, -6, 7, -4];
+/**
+ * How far each column rides against the scroll, in design pixels.
+ *
+ * A column moves as one block. The drift used to be a share of each tile's own
+ * height, and since two tiles in a column are rarely the same height, the same
+ * share came to different distances and the gutter between them stretched and
+ * closed as the page moved. One figure for the whole column leaves every gap in
+ * it exactly as the grid set it.
+ */
+const COLUMN_DRIFT = [-22, 10, -14, 18, -10];
+
+/** Roughly how much scrolling makes a full rise and fall, in pixels. */
+const CYCLE = 1300;
 
 /**
- * Loops the mosaic endlessly and drifts its columns as it moves.
+ * Loops the mosaic endlessly, and rides its columns against the scroll.
  *
  * The mosaic is rendered twice, one copy above the other. Once the page has
  * scrolled past the height of a single copy, the scroll position is moved back
  * by exactly that distance: the second copy is then showing what the first was,
  * pixel for pixel, so the jump is invisible and the mosaic reads as continuous.
  *
- * The parallax is measured from each tile's position in the viewport rather than
- * from overall scroll progress. That is what keeps it seamless too — at the
- * wrap, the duplicate tiles sit exactly where the originals were, so they
- * inherit the same offsets instead of snapping to a new value.
+ * The drift has to survive that jump. It is a sine of the scroll position whose
+ * period divides the loop a whole number of times, so the offsets at the seam
+ * are the same on both sides of it and nothing shifts as the page wraps.
  */
 export function MosaicScroll() {
   useEffect(() => {
@@ -31,39 +41,35 @@ export function MosaicScroll() {
       document.querySelectorAll<HTMLElement>("[data-mosaic] [data-column]"),
     );
 
-    const setDrift = tiles.map((tile) => gsap.quickSetter(tile, "yPercent"));
-    const drift = tiles.map(
-      (tile) =>
-        COLUMN_DRIFT[Number(tile.dataset.column ?? 0) % COLUMN_DRIFT.length],
+    const setDrift = tiles.map((tile) => gsap.quickSetter(tile, "y", "px"));
+    const column = tiles.map(
+      (tile) => Number(tile.dataset.column ?? 0) % COLUMN_DRIFT.length,
     );
 
     let loopHeight = 0;
-    let centres: number[] = [];
-    let canParallax = false;
+    let period = CYCLE;
+    let scale = 1;
+    let canDrift = false;
 
     const measure = () => {
       // The distance between the two passes is the exact period of the
       // pattern, and it is fractional — offsetHeight rounds to whole pixels,
       // which would leave the seam a pixel out.
-      const scrollY = window.scrollY;
       loopHeight =
         copies[1].getBoundingClientRect().top -
         copies[0].getBoundingClientRect().top;
 
-      // Layout positions, not rendered ones: offsetTop and offsetHeight ignore
-      // the transforms this component applies, so reading them back cannot feed
-      // into its own output.
-      centres = tiles.map((tile) => {
-        const canvas = tile.offsetParent as HTMLElement | null;
-        const canvasTop = canvas
-          ? canvas.getBoundingClientRect().top + scrollY
-          : 0;
-        return canvasTop + tile.offsetTop + tile.offsetHeight / 2;
-      });
+      // A whole number of cycles to the loop, so the seam lands mid-stride.
+      const cycles = Math.max(1, Math.round(loopHeight / CYCLE));
+      period = loopHeight / cycles;
 
-      canParallax =
+      // The drift is stated in design pixels, like everything else.
+      scale = copies[0].getBoundingClientRect().width / 1440;
+
+      canDrift =
         window.matchMedia("(min-width: 1200px)").matches &&
         !prefersReducedMotion();
+      if (!canDrift) gsap.set(tiles, { y: 0 });
     };
 
     const wrap = () => {
@@ -86,14 +92,13 @@ export function MosaicScroll() {
 
     const update = () => {
       wrap();
-      if (!canParallax) return;
+      if (!canDrift) return;
 
-      const scrollY = window.scrollY;
-      const middle = window.innerHeight / 2;
+      const phase = (2 * Math.PI * window.scrollY) / period;
+      const ride = Math.sin(phase) * scale;
 
       for (let i = 0; i < tiles.length; i += 1) {
-        const fromMiddle = centres[i] - scrollY - middle;
-        setDrift[i]((drift[i] * fromMiddle) / window.innerHeight);
+        setDrift[i](COLUMN_DRIFT[column[i]] * ride);
       }
     };
 
@@ -108,7 +113,7 @@ export function MosaicScroll() {
       gsap.ticker.remove(update);
       observer.disconnect();
       window.removeEventListener("resize", measure);
-      gsap.set(tiles, { yPercent: 0 });
+      gsap.set(tiles, { y: 0 });
     };
   }, []);
 
