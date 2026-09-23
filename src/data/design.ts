@@ -17,7 +17,7 @@ export const CANVAS_WIDTH = 1440;
  * above, below and either side of every piece. Column width falls out of it,
  * so this is the only number to change to open the grid up or close it.
  */
-export const GUTTER = 40;
+export const GUTTER = 24;
 
 /**
  * Height of the Figma frame "Homepage" (node 2056:2). The frame crops the

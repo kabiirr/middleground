@@ -53,9 +53,9 @@ the Figma frame `Homepage`
 ([node 2056:2](https://www.figma.com/design/MCws2TSRqHQPUcELEVfnRx/Untitled--Copy-?node-id=2056-2)).
 
 The layout has since been regularised on top of that frame: the five columns are
-evenly spaced, and **every gap is 40px** — above, below and either side of every
-piece, and at the join where the page loops. Column width falls out of that
-(`(1440 - 2×40 - 4×40) / 5 = 240`), and all five columns are built to the same
+evenly spaced, and **every gap is 24px** — above, below and either side of every
+tile, and at the join where the page loops. Column width falls out of that
+(`(1440 - 2×24 - 4×24) / 5 = 259.2`), and all five columns are built to the same
 total height, so no column finishes short and opens a wider gap at the seam.
 `GUTTER` in `src/data/design.ts` is the only number to change to open the grid
 up or close it; everything else is measured from it.
@@ -78,12 +78,14 @@ factor defined in `src/app/layout.module.css`:
 `--s` measures its own container (`100cqi`) rather than the viewport, so the
 scrollbar never pushes the mosaic into horizontal overflow.
 
-A tile is a frame and a title: the frame takes the height the grid gives it
-less a 26px band, and the title sits in that band underneath. Giving the band
-up out of the frame rather than adding it below keeps the grid's rhythm exactly
-as drawn — a title that added height would push every tile into the one below
-it, and on the desktop canvas, where tiles are placed at absolute coordinates,
-they would simply overlap.
+A tile is a piece and its title together, and it is tiles the 24px is measured
+between: the title travels with the work it names rather than floating in the
+space between two of them. The frame takes the height the grid gives it less a
+24px band and the title stands in that band, so the grid's rhythm is exactly as
+drawn — a title that added height would push every tile into the one below it,
+and on the desktop canvas, where tiles sit at absolute coordinates, they would
+simply overlap. The piece above a title therefore ends 48px from the one below
+it rather than 24: the 24 is between tiles, and 24 of it is the title's own.
 
 Clicking a tile opens its artwork over the page, whole rather than cropped to
 the grid. `ArtworkProvider` wraps the mosaic and holds the one piece that can
@@ -101,9 +103,8 @@ it has to get right:
   behind is held still — through Lenis, which drives the scrolling here, since
   `overflow: hidden` alone would leave it running underneath.
 
-The 40px is the same in both directions and stays that way while the page
-moves: the title hangs in the gutter rather than taking a band out of the foot
-of its tile, and the columns ride as whole blocks rather than tile by tile.
+The 24px is the same in both directions and stays that way while the page
+moves, because the columns ride as whole blocks rather than tile by tile.
 
 Each tile carries a `data-node-id` matching its Figma node, so any tile on the
 page can be traced back to the design.
@@ -535,14 +536,14 @@ scroll position.
   edges are deliberately close together, since that row butts against row one of
   the next pass — a ragged edge there would open a gap far wider than the
   mosaic's own rhythm. All five columns are therefore built to the same total
-  height, and the canvas carries no bottom margin, so the join is 40px like
+  height, and the canvas carries no bottom margin, so the join is 24px like
   every other gap.
 
 - **Parallax, by the column rather than by the tile.** Each column rides
   against the scroll as one block, so every gap inside it stays exactly what
   the grid set. It was a share of each tile's own height before, and since two
   tiles in a column are rarely the same height the same share came to
-  different distances — the 40px between them stretched and closed as the page
+  different distances — the 24px between them stretched and closed as the page
   moved, which is the one measurement the whole grid is built on. The ride is
   a sine of the scroll position whose period divides the loop a whole number
   of times, so the offsets match on both sides of the seam and nothing shifts

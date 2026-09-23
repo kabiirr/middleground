@@ -9,9 +9,9 @@
  * width and height come from the tile data, so the page lengthens on its own as
  * rows are appended.
  */
-/* The grid's own gutter, the same above, below and either side of a piece. */
+/* The grid's own gutter, the same above, below and either side of a tile. */
 .loop {
-  --gap: calc(40 * var(--s));
+  --gap: calc(24 * var(--s));
 }
 
 .canvas {
@@ -21,26 +21,28 @@
   margin-inline: auto;
 }
 
-/* Placed on the canvas from the design coordinates the tile carries. */
+/*
+ * Placed on the canvas from the design coordinates the tile carries. A tile is
+ * the piece and its title together, and it is tiles the 24px gutter is
+ * measured between — the title travels with the work it names rather than
+ * floating in the space between two of them.
+ */
 .tile {
   position: absolute;
   left: calc(var(--x) * var(--s));
   top: calc(var(--y) * var(--s));
   width: calc(var(--w) * var(--s));
   height: calc(var(--h) * var(--s));
+  /* The title's line and the air above it, given up by the frame below. */
+  --title-band: calc(24 * var(--s));
 }
 
-/*
- * The artwork's own box, which is the whole tile. The title hangs below it in
- * the gutter rather than taking a band out of the foot — a band would leave
- * every piece 24px from its neighbour across and 50px from the one beneath,
- * and the gutter is meant to read the same in both directions.
- */
+/* The artwork's own box: the tile, less the band its title stands in. */
 .frame {
   position: relative;
   display: block;
   width: 100%;
-  height: 100%;
+  height: calc(100% - var(--title-band));
   overflow: hidden;
   background-color: var(--color-tile);
 }
@@ -60,17 +62,11 @@
   object-fit: cover;
 }
 
-/*
- * Under the work it names, hung in the 24px gutter below it: six above the
- * line and twelve for the line itself, which leaves six clear before the
- * piece underneath.
- */
+/* Under the work it names, inside the tile's own foot. */
 .caption {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  padding-top: calc(6 * var(--s));
+  display: block;
+  height: var(--title-band);
+  padding-top: calc(8 * var(--s));
   margin: 0;
   font-family: var(--font-mono);
   font-weight: 300;
@@ -127,7 +123,7 @@
     /* The design coordinates mean nothing once the tiles simply flow. */
     inset: auto;
     width: auto;
-    /* The frame carries the tile's proportions; the title hangs below it. */
+    /* The frame carries the proportions; the title adds its line beneath. */
     height: auto;
     margin-bottom: var(--gap);
     break-inside: avoid;
@@ -140,7 +136,8 @@
   }
 
   .caption {
-    padding-top: 6px;
+    height: auto;
+    padding-top: 8px;
     font-size: 11px;
   }
 }

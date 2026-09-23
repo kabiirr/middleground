@@ -10,8 +10,8 @@
   top: 0;
   bottom: 0;
   /* Column three of the same grid the mosaic is built on. */
-  left: calc(50% - 120 * var(--s));
-  width: calc(240 * var(--s));
+  left: calc(50% - 129.6 * var(--s));
+  width: calc(259.2 * var(--s));
   z-index: 2;
   pointer-events: none;
 
