@@ -431,6 +431,13 @@
     position: static;
     display: flex;
     flex-direction: column;
+    /*
+     * And no height of their own. The figures they carry are the depth of a
+     * band in a 1440-wide frame; down here the portrait alone is taller than
+     * that, and a section held to 514 would spill its own paragraph into the
+     * line of the section below it.
+     */
+    height: auto;
   }
 
   .statement {

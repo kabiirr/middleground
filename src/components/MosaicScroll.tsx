@@ -29,6 +29,9 @@ const CYCLE = 1300;
  * The drift has to survive that jump. It is a sine of the scroll position whose
  * period divides the loop a whole number of times, so the offsets at the seam
  * are the same on both sides of it and nothing shifts as the page wraps.
+ *
+ * None of it applies on a phone. There the mosaic reflows into flowing columns
+ * and the second pass is taken out of the layout, so the page simply ends.
  */
 export function MosaicScroll() {
   useEffect(() => {
@@ -49,6 +52,7 @@ export function MosaicScroll() {
     let loopHeight = 0;
     let period = CYCLE;
     let scale = 1;
+    let canLoop = false;
     let canDrift = false;
 
     const measure = () => {
@@ -66,13 +70,16 @@ export function MosaicScroll() {
       // The drift is stated in design pixels, like everything else.
       scale = copies[0].getBoundingClientRect().width / 1440;
 
-      canDrift =
-        window.matchMedia("(min-width: 1200px)").matches &&
-        !prefersReducedMotion();
+      // Only the standing desktop composition loops. Once the mosaic reflows
+      // into a phone's two columns it is a page with an end, and the second
+      // pass is out of the layout altogether — so there is nothing to wrap to.
+      canLoop = window.matchMedia("(min-width: 1200px)").matches;
+      canDrift = canLoop && !prefersReducedMotion();
       if (!canDrift) gsap.set(tiles, { y: 0 });
     };
 
     const wrap = () => {
+      if (!canLoop) return;
       // A loop shorter than the window would wrap mid-screen, which would be
       // visible. Better to leave the page as an ordinary one.
       if (loopHeight <= window.innerHeight) return;

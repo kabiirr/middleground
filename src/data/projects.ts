@@ -202,7 +202,8 @@ export const CAPTION = {
   /** Line height for both, as a multiple of their size. */
   line: 1.2,
   name: 14,
-  note: 11,
+  /* The size of the name above it; the grey is what tells them apart. */
+  note: 14,
 } as const;
 
 /** The band those three make, in pixels — and nothing besides them. */

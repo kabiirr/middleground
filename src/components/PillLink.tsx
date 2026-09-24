@@ -9,9 +9,12 @@ import styles from "./PillLink.module.css";
 /**
  * A pill that leads somewhere, outside the navigation.
  *
- * It takes the same route as a nav pill rather than a plain link: clicks play
- * the page you are on out before the push, and the page you are going to back
- * in. A bare `next/link` would cut straight to the new page.
+ * Within the site it takes the same route as a nav pill rather than a plain
+ * link: clicks play the page you are on out before the push, and the page you
+ * are going to back in. A bare `next/link` would cut straight to the new page.
+ *
+ * Off the site there is no page of our own to play out of, so it is a plain
+ * anchor that opens in a new tab and leaves the site where it stands.
  */
 export function PillLink({
   href,
@@ -42,12 +45,23 @@ export function PillLink({
     navigate(href);
   };
 
+  const face = `${styles.pill}${className ? ` ${className}` : ""}`;
+
+  if (/^(https?:|mailto:|tel:)/.test(href)) {
+    return (
+      <a
+        href={href}
+        className={face}
+        target={href.startsWith("http") ? "_blank" : undefined}
+        rel={href.startsWith("http") ? "noreferrer" : undefined}
+      >
+        {label}
+      </a>
+    );
+  }
+
   return (
-    <Link
-      href={href}
-      className={`${styles.pill}${className ? ` ${className}` : ""}`}
-      onClick={handleClick}
-    >
+    <Link href={href} className={face} onClick={handleClick}>
       {label}
     </Link>
   );

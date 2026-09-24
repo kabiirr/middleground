@@ -105,6 +105,8 @@ export type ContactLink = {
  * page anyone can open.
  */
 export const contactLinks: ContactLink[] = [
+  /* First, since a time in the diary is the readiest way in. */
+  { label: "Book a call", href: bookingUrl },
   {
     label: "Enquiries: hello@middleground.design",
     href: "mailto:hello@middleground.design",

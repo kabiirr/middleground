@@ -3,7 +3,8 @@ import { Mosaic } from "@/components/Mosaic";
 import { Monogram } from "@/components/Monogram";
 import { Nav } from "@/components/Nav";
 import { PillLink } from "@/components/PillLink";
-import { site } from "@/data/site";
+import { StickyPill } from "@/components/StickyPill";
+import { bookingUrl, site } from "@/data/site";
 
 import styles from "./home.module.css";
 
@@ -26,8 +27,8 @@ export default function Home() {
           <p className={styles.tagline} data-intro="rest">
             {site.tagline}
           </p>
-          <div className={styles.cta} data-intro="rest">
-            <PillLink href="/contact" label="CONTACT US" />
+          <div className={styles.cta} data-intro="rest" data-cta="">
+            <PillLink href={bookingUrl} label="REACH OUT" />
           </div>
         </div>
       </div>
@@ -37,6 +38,15 @@ export default function Home() {
         identity={false}
         delay={MOSAIC_DELAY}
       />
+
+      {/*
+        The same way on, held at the foot of the screen once the panel has been
+        scrolled past. It only ever shows on a phone, where the panel travels
+        with the page instead of standing still beside the work.
+      */}
+      <StickyPill watch="[data-cta]" className={styles.held}>
+        <PillLink href={bookingUrl} label="REACH OUT" />
+      </StickyPill>
     </>
   );
 }

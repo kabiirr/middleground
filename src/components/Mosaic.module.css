@@ -115,6 +115,16 @@
  * simple column-based masonry instead, keeping each tile's aspect ratio.
  */
 @media (max-width: 1199px) {
+  /*
+   * The page stops at the end of the work rather than going round again. The
+   * second pass is only there to make the desktop loop seamless, and a loop
+   * wants a standing composition to wrap against — reflowed into a column that
+   * simply flows, it would read as the work repeating itself.
+   */
+  .canvas[data-copy="1"] {
+    display: none;
+  }
+
   .canvas {
     width: auto;
     height: auto;
