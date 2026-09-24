@@ -38,26 +38,53 @@ export const aboutColumns = [
 ];
 
 /**
- * What the studio does (node 2075:35), read as one run of type. The design
- * alternates two voices through it; here it is all the one, the serif italic
- * in grey, and the slashes between are the only sans in the run.
+ * What the studio does (node 2075:35), read as one run of type — all of it the
+ * serif italic, with the slashes between as the only sans in the run.
+ *
+ * Five of them stand in white and the rest in grey, which is the division the
+ * design draws with its two typefaces, kept here as a difference of tone alone.
+ *
+ * They are read two at a time, and each two hold together on a line. That is
+ * what keeps the run even: left to itself it wraps wherever the width happens
+ * to run out, which is how a discipline ends up standing alone on a line of its
+ * own. Keep the count even when the list is changed.
  */
-export const disciplines = [
-  "Brand Identity",
-  "Editorial",
-  "Packaging",
-  "Strategy",
-  "Websites",
-  "Tone of Voice",
-  "Naming",
-  "3D & Motion",
-  "Creative Direction",
-  "Typefaces",
+export type Discipline = {
+  name: string;
+  /** Standing in white rather than waiting for the pointer. */
+  bright?: boolean;
+};
+
+export const disciplines: Discipline[] = [
+  { name: "Brand Identity", bright: true },
+  { name: "Editorial" },
+  { name: "Packaging" },
+  { name: "Strategy", bright: true },
+  { name: "Websites", bright: true },
+  { name: "Tone of Voice" },
+  { name: "Naming" },
+  { name: "3D & Motion", bright: true },
+  { name: "Creative Direction", bright: true },
+  { name: "Type Design" },
 ];
+
+/**
+ * The same list, two at a time — which is how it is set, and how it reads.
+ */
+export const disciplinePairs: Discipline[][] = disciplines.reduce<
+  Discipline[][]
+>((pairs, discipline, index) => {
+  if (index % 2 === 0) pairs.push([discipline]);
+  else pairs[pairs.length - 1].push(discipline);
+  return pairs;
+}, []);
+
+/** Where a call is booked, which is what the disciplines lead to. */
+export const bookingUrl = "https://calendly.com/abelidume/meet-with-abel";
 
 /** Who leads the work (node 2075:51). */
 export const aboutLead =
-  "MiddleGround is led by brand designer and creative director Abel Idume, supported by a trusted network of specialists we bring in as each project requires. This keeps every engagement intentionally focused and hands-on, with Abel personally leading the work from start to finish.";
+  "MiddleGround is led by brand designer and creative director Abel Idume. With 8 years of experience across brand, visual, motion, and digital design, he brings a broad perspective to every project, supported by a trusted network of specialists when needed. This keeps every engagement focused and hands-on, with Abel personally leading the work from start to finish.";
 
 /** The invitation at the foot of the page (node 2075:4). */
 export const aboutInvitation = "Get in touch";

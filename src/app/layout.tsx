@@ -1,5 +1,8 @@
 import type { Metadata, Viewport } from "next";
 
+import type { CSSProperties } from "react";
+
+import { CENTRE_WIDTH, COLUMNS_WIDTH, GUTTER } from "@/data/design";
 import { SiteNav } from "@/components/SiteNav";
 import {
   NavigationProvider,
@@ -86,7 +89,21 @@ export default function RootLayout({
           change colour between pages instead of cutting.
         */}
         <NavigationProvider>
-          <div className={styles.page}>
+          {/*
+            The grid's two constants, handed to CSS from the one place they are
+            defined, so the stylesheets can work out the scale without keeping
+            their own copy of either.
+          */}
+          <div
+            className={styles.page}
+            style={
+              {
+                "--gap": `${GUTTER}px`,
+                "--columns": COLUMNS_WIDTH,
+                "--centre": CENTRE_WIDTH,
+              } as CSSProperties
+            }
+          >
             <header className={styles.header}>
               <SiteNav />
             </header>

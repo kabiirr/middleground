@@ -7,20 +7,29 @@
 .page {
   position: relative;
   width: 100%;
-  /* Past this the composition stops inflating and sits centred on black. */
-  max-width: 1920px;
   margin-inline: auto;
   container-type: inline-size;
 }
 
 /*
- * The scale factor behind every page. Dimensions are written as
- * `calc(<design px> * var(--s))`, so at 1440px --s is exactly 1 and the page
- * matches Figma pixel for pixel; at other widths it zooms in step, preserving
- * every proportion. Set on the children because an element cannot query itself.
+ * The two scales behind every page, set on the children because an element
+ * cannot query itself.
+ *
+ * --s is the plain zoom: dimensions written as `calc(<design px> * var(--s))`
+ * match Figma pixel for pixel at 1440 and keep their proportions at any other
+ * width. Past 1920 it holds, so type and the standing compositions stop
+ * inflating and sit centred on the black.
+ *
+ * --u is the mosaic's own, and it does not stop. It is the width of one design
+ * unit of artwork once the gutters have been taken out of the screen: the
+ * gutters hold at --gap however wide the screen is, and the artwork takes
+ * everything left over. At 1440 the two agree exactly — (1440 - 6 x 16) over
+ * the five columns' 1344 is 1 — which is what keeps the design's own frame the
+ * reference at the width it was drawn to.
  */
 .page > * {
-  --s: calc(100cqi / 1440);
+  --s: calc(min(100cqi, 1920px) / 1440);
+  --u: calc((100cqi - 6 * var(--gap)) / var(--columns));
 }
 
 /*

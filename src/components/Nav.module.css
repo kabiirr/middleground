@@ -36,7 +36,7 @@
   font: inherit;
   font-family: var(--font-mono);
   font-weight: 300;
-  font-size: calc(16 * var(--s));
+  font-size: calc(13 * var(--s));
   line-height: 1;
   white-space: nowrap;
   transition:
@@ -71,7 +71,7 @@
   .pill {
     padding-inline: 14px;
     border-radius: 54px;
-    font-size: 16px;
+    font-size: 13px;
   }
 }
 
@@ -90,7 +90,7 @@
 
   .pill {
     padding-inline: 12px;
-    font-size: 14px;
+    font-size: 13px;
   }
 }
 

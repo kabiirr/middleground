@@ -2,8 +2,14 @@ import type { CSSProperties } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
-import { CANVAS_WIDTH, COLUMN_X, toStyle } from "@/data/design";
-import { canvasHeight, tiles, type Tile } from "@/data/projects";
+import { COLUMN_X, toStyle } from "@/data/design";
+import {
+  CAPTION,
+  COLUMN_METRICS,
+  TITLE_BAND,
+  tiles,
+  type Tile,
+} from "@/data/projects";
 
 import { ArtworkProvider, ArtworkTrigger } from "./ArtworkView";
 import { Identity } from "./Identity";
@@ -24,6 +30,20 @@ const IMAGE_SIZES =
 const ABOVE_THE_FOLD = 5;
 
 /** Which of the five design columns a tile sits in. */
+/**
+ * How tall the canvas has to be: as deep as the deepest column.
+ *
+ * Each column's depth is written out in the three parts a height is made of —
+ * the gutters and the caption bands, which hold their size however wide the
+ * screen, and the artwork between them, which grows with it. Since they scale
+ * differently, which column is deepest could change with the width, so the
+ * maximum is taken in CSS rather than settled here at one width.
+ */
+const CANVAS_HEIGHT = `max(${COLUMN_METRICS.map(
+  ({ gaps, bands, stacked }) =>
+    `calc(${gaps} * var(--gap) + ${bands} * var(--band) + ${stacked} * var(--u))`,
+).join(", ")})`;
+
 function columnOf(tile: Tile) {
   return COLUMN_X.reduce(
     (best, x, index) =>
@@ -68,8 +88,12 @@ function MosaicTile({
   interactive: boolean;
 }) {
   const style = {
-    ...toStyle(tile.rect),
-    "--tile-ratio": `${tile.rect.width} / ${tile.rect.height}`,
+    ...toStyle(tile.rect, tile.place),
+    // The artwork's own proportions, which is the tile less the band its title
+    // stands in. Used where the tiles flow rather than being placed.
+    "--tile-ratio": `${tile.rect.width} / ${tile.rect.height - TITLE_BAND}`,
+    // And how much of the tile is artwork, which is the part that grows.
+    "--art": tile.rect.height - TITLE_BAND,
   } as CSSProperties;
 
   const inside = (
@@ -77,7 +101,12 @@ function MosaicTile({
       <span className={styles.frame}>
         <TileArtwork tile={tile} priority={priority} />
       </span>
-      {tile.title ? <span className={styles.caption}>{tile.title}</span> : null}
+      {tile.title ? (
+        <span className={styles.caption}>
+          <span className={styles.name}>{tile.title}</span>
+          {tile.note ? <span className={styles.note}>{tile.note}</span> : null}
+        </span>
+      ) : null}
     </>
   );
 
@@ -132,10 +161,16 @@ function Canvas({
   );
 
   const style = {
-    // Passed as custom properties rather than width/height so the responsive
-    // rules in the stylesheet can still drop the canvas out of absolute layout.
-    "--canvas-width": CANVAS_WIDTH,
-    "--canvas-height": canvasHeight,
+    // Passed as a custom property rather than a height so the responsive rules
+    // in the stylesheet can still drop the canvas out of absolute layout.
+    "--canvas-height": CANVAS_HEIGHT,
+    // The caption's own measurements, in pixels, handed down so the band a tile
+    // leaves for it is the same figure as what stands in it.
+    "--band": `${TITLE_BAND}px`,
+    "--caption-top": `${CAPTION.top}px`,
+    "--caption-line": CAPTION.line,
+    "--caption-name": `${CAPTION.name}px`,
+    "--caption-note": `${CAPTION.note}px`,
   } as CSSProperties;
 
   return (

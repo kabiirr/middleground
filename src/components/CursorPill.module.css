@@ -1,0 +1,111 @@
+/*
+ * Built to the navigation's measurements — the same height, radius, padding and
+ * face — but carried by the pointer rather than standing on the page.
+ *
+ * Its state comes from the band above it: the Torch marks that with `data-lit`,
+ * and an attribute reaches across module boundaries where a class name, hashed
+ * per file, would not.
+ */
+.pill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  height: calc(39 * var(--s));
+  padding-inline: calc(14 * var(--s));
+  border-radius: calc(54 * var(--s));
+  /* Whatever fill the section has handed it, or the pill's own white. */
+  background-color: var(--pill, var(--color-pill));
+  color: var(--color-pill-ink);
+  font-family: var(--font-mono);
+  font-weight: 300;
+  font-size: calc(13 * var(--s));
+  line-height: 1;
+  white-space: nowrap;
+  /* Centred on the point it is standing in for. */
+  translate: calc(var(--tx) - 50%) calc(var(--ty) - 50%);
+  /* It is a cursor, not something to aim at. */
+  pointer-events: none;
+  /* The label runs; the pill holds its length. */
+  overflow: hidden;
+  opacity: 0;
+  /*
+   * Shut, it is a circle: the pill clipped in from both ends until only its own
+   * height is left. Opening is that inset going to nothing, which is why it is
+   * a clip rather than a width — the pill keeps its full size throughout, so it
+   * stays centred on the point it stands for while it grows.
+   */
+  --shut: calc(50% - (39 * var(--s)) / 2);
+  clip-path: inset(0 var(--shut) round calc(54 * var(--s)));
+  transition:
+    opacity 140ms ease,
+    background-color 220ms ease,
+    clip-path 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+[data-lit] > .pill {
+  opacity: 1;
+  clip-path: inset(0 0 round calc(54 * var(--s)));
+}
+
+/* The label once, standing still and unseen: what the pill is as wide as. */
+.width {
+  visibility: hidden;
+}
+
+/*
+ * And the label running. Two copies a gap apart, slid the length of one copy
+ * and that gap, so the moment the first has gone the second is exactly where it
+ * started and the loop shows no seam.
+ */
+.loop {
+  position: absolute;
+  left: calc(14 * var(--s));
+  top: 0;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  --loop-gap: calc(28 * var(--s));
+  gap: var(--loop-gap);
+  animation: loop 4.5s linear infinite;
+}
+
+.loop > span {
+  white-space: nowrap;
+}
+
+@keyframes loop {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(-50% - var(--loop-gap) / 2));
+  }
+}
+
+/* A touch screen has no cursor to replace. */
+@media (max-width: 1199px) {
+  .pill {
+    display: none;
+  }
+}
+
+/* Asked for less movement, it arrives at full length and the label stands. */
+@media (prefers-reduced-motion: reduce) {
+  .pill,
+  [data-lit] > .pill {
+    clip-path: none;
+  }
+
+  .pill {
+    transition:
+      opacity 140ms ease,
+      background-color 220ms ease;
+  }
+
+  .loop {
+    animation: none;
+  }
+}

@@ -52,40 +52,66 @@ Both homepages are built on the same hand-placed 5-column mosaic, taken from
 the Figma frame `Homepage`
 ([node 2056:2](https://www.figma.com/design/MCws2TSRqHQPUcELEVfnRx/Untitled--Copy-?node-id=2056-2)).
 
-The layout has since been regularised on top of that frame: the five columns are
-evenly spaced, and **every gap is 24px** — above, below and either side of every
-tile, and at the join where the page loops. Column width falls out of that
-(`(1440 - 2×24 - 4×24) / 5 = 259.2`), and all five columns are built to the same
-total height, so no column finishes short and opens a wider gap at the seam.
-`GUTTER` in `src/data/design.ts` is the only number to change to open the grid
-up or close it; everything else is measured from it.
+The layout has since been regularised on top of that frame. **Every gap is
+16px** — above, below and either side of every tile, and at the join where the
+page loops — and `GUTTER` in `src/data/design.ts` is the only number to change
+to open the grid up or close it.
 
-Tiles are stored as five column stacks in `src/data/projects.ts` and positioned
-absolutely, with artwork applied in reading order. The canvas height is the
-lowest tile edge with no margin beneath it — the page loops, so the next pass
-brings its own top margin and that alone is the gap at the seam.
+The five columns are not the same width. Four carry artwork; the middle one
+carries the studio's name, what it does and the way through, and type has a
+width it wants, so it is set to **324** and the four divide what is left
+(`(1440 - 6×16 - 324) / 4 = 255`). Tiles are stored as five column stacks in
+`src/data/projects.ts`, dealt by hand rather than by turn, and positioned
+absolutely.
 
-Every dimension is `calc(<design px> * var(--s))`, where `--s` is a single scale
-factor defined in `src/app/layout.module.css`:
+**No piece is cropped: a tile is as tall as the artwork it holds.** Which is why
+the columns are dealt by hand. They all have to finish on the same line, or a
+column ending short shows its shortfall as one wide gap at the loop's join — the
+one place the grid's 16px would not hold. And they have to finish level at every
+width, which takes more than matching totals: a height is so many gutters and so
+many caption bands, which hold their size, plus so much artwork, which grows. So
+every column carries seven of each, and the four of work carry the same shapes —
+five pieces in 4:5 and two square. The middle column is the exception the name
+allows: its block is the seventh thing there and its height is whatever the
+other six leave, which is what lets that column seat the two pieces whose shapes
+match nothing else. A dev-time check in `src/data/projects.ts` throws if a
+future edit puts a column out of step.
 
-- at a 1440px viewport `--s` is exactly `1`, so the page matches Figma pixel for
-  pixel;
-- above that the whole composition zooms in step, preserving every proportion,
-  capped at 1920px;
-- below 1200px the zoom would push type past readability, so `--s` returns to
-  `1` and the mosaic reflows into a 3 / 2 column masonry.
+Two scales are handed down from `src/app/layout.module.css`, and both measure
+their own container (`100cqi`) rather than the viewport, so the scrollbar never
+pushes anything into horizontal overflow.
 
-`--s` measures its own container (`100cqi`) rather than the viewport, so the
-scrollbar never pushes the mosaic into horizontal overflow.
+**`--s`, the page's zoom.** Dimensions written as `calc(<design px> * var(--s))`
+match Figma pixel for pixel at 1440 and hold their proportions at any other
+width. Above 1920 it stops, so type and the standing compositions do not inflate
+forever. Below 1200 the zoom would push type past readability, so it returns to
+`1` and the pages reflow.
 
-A tile is a piece and its title together, and it is tiles the 24px is measured
-between: the title travels with the work it names rather than floating in the
-space between two of them. The frame takes the height the grid gives it less a
-24px band and the title stands in that band, so the grid's rhythm is exactly as
-drawn — a title that added height would push every tile into the one below it,
-and on the desktop canvas, where tiles sit at absolute coordinates, they would
-simply overlap. The piece above a title therefore ends 48px from the one below
-it rather than 24: the 24 is between tiles, and 24 of it is the title's own.
+**`--u`, the mosaic's own, which does not stop.** It is the width of one design
+unit of artwork once the gutters are out of the screen:
+`(100cqi - 6 × gutter) / 1344`, that last being the five columns together. The
+gutters hold at 16px however wide the screen is and the artwork takes everything
+left over, so a piece grows in both directions while the space around it stays
+put. At 1440 the two scales agree exactly, which is what keeps the frame the
+reference at the width it was drawn to.
+
+A position is therefore counted rather than measured: so many gutters and so
+many caption bands, which never change, plus so much artwork before it, which
+does. Every tile carries all three (`--xg`/`--xd`, `--yg`, `--yb`, `--yd`), and
+`Place` in `src/data/design.ts` is where that count is defined. The homepage
+panel is measured in `--u` as well, since it is the middle column of the same
+grid and would otherwise stop growing at 1920 while its column carried on
+without it.
+
+A tile is a piece and its caption together, and it is tiles the 16px is measured
+between: the caption travels with the work it names rather than floating in the
+space between two of them. Under the artwork stands the project's name at 14px
+and, beneath that, what the work was and when at 11px — both in the sans, since
+the display face signs the page and not the work. Those are pixels, not design
+units: a caption is text at a size someone chose, the same on a laptop as on a
+wall. So the band holding them is `8 + (14 + 11) × 1.2 = 38px` and holds too,
+and the band is exactly its contents — anything spare inside it would show up
+under the caption as space the gutter appears to gain.
 
 Clicking a tile opens its artwork over the page, whole rather than cropped to
 the grid. `ArtworkProvider` wraps the mosaic and holds the one piece that can
@@ -103,7 +129,7 @@ it has to get right:
   behind is held still — through Lenis, which drives the scrolling here, since
   `overflow: hidden` alone would leave it running underneath.
 
-The 24px is the same in both directions and stays that way while the page
+The 16px is the same in both directions and stays that way while the page
 moves, because the columns ride as whole blocks rather than tile by tile.
 
 Each tile carries a `data-node-id` matching its Figma node, so any tile on the
@@ -132,7 +158,8 @@ somewhere in the grid.
 
 The slots are not authored. The block is taller than any tile, but it may
 overhang its host by up to a gutter at each end before it would touch the tile
-above or below — so any tile within 48px of its height can hold it, centred.
+above or below — so any tile within two gutters of its height can hold it,
+centred.
 That comes to ten across the canvas (`identitySlots`), spread closely enough
 that the furthest you can ever be from one is under half a screen.
 
@@ -536,14 +563,14 @@ scroll position.
   edges are deliberately close together, since that row butts against row one of
   the next pass — a ragged edge there would open a gap far wider than the
   mosaic's own rhythm. All five columns are therefore built to the same total
-  height, and the canvas carries no bottom margin, so the join is 24px like
+  height, and the canvas carries no bottom margin, so the join is 16px like
   every other gap.
 
 - **Parallax, by the column rather than by the tile.** Each column rides
   against the scroll as one block, so every gap inside it stays exactly what
   the grid set. It was a share of each tile's own height before, and since two
   tiles in a column are rarely the same height the same share came to
-  different distances — the 24px between them stretched and closed as the page
+  different distances — the gap between them stretched and closed as the page
   moved, which is the one measurement the whole grid is built on. The ride is
   a sine of the scroll position whose period divides the loop a whole number
   of times, so the offsets match on both sides of the seam and nothing shifts

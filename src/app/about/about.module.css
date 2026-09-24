@@ -17,10 +17,11 @@
 /* The mark that leads the page, centred and turning as it does elsewhere. */
 .mark {
   position: absolute;
-  left: calc(696.315 * var(--s));
+  /* The size it is on the contact page, so the two read as the same mark. */
+  left: calc(50% - 39.7805 * var(--s));
   top: calc(185 * var(--s));
-  width: calc(47.432 * var(--s));
-  height: calc(47.432 * var(--s));
+  width: calc(79.561 * var(--s));
+  height: calc(79.561 * var(--s));
 }
 
 /* What the studio is, in one statement. */
@@ -69,7 +70,14 @@
   position: absolute;
   left: calc(268 * var(--s));
   top: calc(800 * var(--s));
-  width: calc(905 * var(--s));
+  /*
+   * Wider than the 905 the design draws, by enough to bring Type Design up
+   * beside Creative Direction rather than leaving it hanging on a line of its
+   * own. The room either side of that is real: under 944 the pair splits again,
+   * and past 1012 the line above takes Creative Direction and strands Type
+   * Design just the same.
+   */
+  width: calc(975 * var(--s));
   height: calc(440 * var(--s));
 
   /* Where the pointer is, in this section's own space. */
@@ -103,26 +111,52 @@
   white-space: nowrap;
 }
 
-/* The slashes are the sans, upright, as the design sets them. */
+/*
+ * The slashes are the sans, upright, as the design sets them — and always
+ * grey: punctuation between two disciplines belongs to neither, so it neither
+ * stands in white nor fills with the one before it.
+ */
 .slash {
   font-family: var(--font-sans);
   font-style: normal;
+  color: var(--color-muted);
 }
 
 /*
- * The one the pointer is on fills to white. Only the discipline itself: the
- * slash is punctuation between two of them and belongs to neither.
+ * Two disciplines to a line, which is what the pairs are for: nothing may break
+ * inside one, so the only places the run can wrap are between them. The width
+ * above is set to hold the longest pair, and with that the rows come out two
+ * and two rather than leaving one hanging.
+ */
+.pair {
+  white-space: nowrap;
+}
+
+/*
+ * And the break opportunity inside a pair, held shut. A <wbr> is a zero-width
+ * space, and a space of no width parts a line even where nothing else may — so
+ * it is taken out of the flow rather than asked not to break.
+ */
+.pair > wbr {
+  display: none;
+}
+
+/*
+ * Five of them stand in white from the start. The rest wait for the pointer and
+ * fill when it finds them — only the rest: the white ones are already lit, and
+ * moving over one should not take anything away.
  */
 .discipline {
+  color: var(--color-muted);
   transition: color 240ms ease;
 }
 
-.discipline:hover {
+.bright {
   color: var(--color-ink);
 }
 
-.discipline:hover .slash {
-  color: var(--color-muted);
+.discipline:not(.bright):hover {
+  color: var(--color-ink);
 }
 
 /*
@@ -244,7 +278,13 @@
 .lead {
   position: absolute;
   left: calc(270 * var(--s));
-  top: calc(370 * var(--s));
+  /*
+   * Hung from the foot of the section rather than set down from its top, which
+   * is the portrait's foot too — so the paragraph ends on the same line as the
+   * picture beside it however many lines it runs to.
+   */
+  top: auto;
+  bottom: 0;
   width: calc(368 * var(--s));
   margin: 0;
   font-family: var(--font-sans);
@@ -265,17 +305,17 @@
   left: 0;
   right: 0;
   /*
-   * Below the portrait, which ends at 1822 — the section has to be its own
-   * ground, or the light and the borrowed cursor follow the pointer up into
-   * the one above it.
+   * Below everything above it — the portrait ends at 1822 and the paragraph
+   * beside it runs to 1870. The section has to be its own ground, or the
+   * borrowed cursor is taken by a pointer that is only reading the sentence
+   * above.
    */
-  top: calc(1860 * var(--s));
+  top: calc(1900 * var(--s));
   bottom: 0;
 
   /* Where the pointer is, in this section's own space. */
   --tx: 50%;
   --ty: 50%;
-  --torch: calc(210 * var(--s));
 }
 
 /*
@@ -303,90 +343,18 @@
   display: block;
 }
 
-.invitationLine,
-.invitationLit {
+.invitationLine {
   position: absolute;
   left: calc(11 * var(--s));
-  top: calc(130 * var(--s));
+  top: calc(90 * var(--s));
   margin: 0;
   font-family: var(--font-display);
   font-style: italic;
   font-weight: 400;
   font-size: calc(286.247 * var(--s));
   line-height: 0.8;
-  color: transparent;
-  -webkit-text-stroke: calc(1.5 * var(--s)) var(--color-muted);
-  white-space: nowrap;
-}
-
-/*
- * The lit copy, filled rather than outlined, and shown only inside the circle
- * the pill carries. The mask is given in the band's coordinates, so the line's
- * own offset within the band comes back off here.
- */
-.invitationLit {
   color: var(--color-bone);
-  -webkit-text-stroke: 0;
-  opacity: 0;
-  transition: opacity 320ms ease;
-  -webkit-mask-image: radial-gradient(
-    circle var(--torch) at calc(var(--tx) - 11 * var(--s))
-      calc(var(--ty) - 130 * var(--s)),
-    #000 0 22%,
-    rgb(0 0 0 / 45%) 55%,
-    transparent 78%
-  );
-  mask-image: radial-gradient(
-    circle var(--torch) at calc(var(--tx) - 11 * var(--s))
-      calc(var(--ty) - 130 * var(--s)),
-    #000 0 22%,
-    rgb(0 0 0 / 45%) 55%,
-    transparent 78%
-  );
-}
-
-.invitation[data-lit] .invitationLit {
-  opacity: 1;
-}
-
-/*
- * The cursor itself, while the pointer is in the section: the same pill the
- * design draws at the foot of the page, built to the navigation's own
- * measurements and carried by the pointer.
- */
-.cursor {
-  position: absolute;
-  left: 0;
-  top: 0;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  height: calc(39 * var(--s));
-  padding-inline: calc(14 * var(--s));
-  border-radius: calc(54 * var(--s));
-  background-color: var(--color-pill);
-  color: var(--color-pill-ink);
-  font-family: var(--font-mono);
-  font-weight: 300;
-  font-size: calc(16 * var(--s));
-  line-height: 1;
   white-space: nowrap;
-  /* Centred on the point it is standing in for. */
-  translate: calc(var(--tx) - 50%) calc(var(--ty) - 50%);
-  /* It is a cursor, not something to aim at. */
-  pointer-events: none;
-  opacity: 0;
-  scale: 0.85;
-  transition:
-    opacity 180ms ease,
-    scale 260ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-/* Either section, while the pointer is inside it. */
-.invitation[data-lit] > .cursor,
-.services[data-lit] > .cursor {
-  opacity: 1;
-  scale: 1;
 }
 
 /* Where the design puts it, for anything without a cursor to replace. */
@@ -394,7 +362,7 @@
   position: absolute;
   left: 0;
   right: 0;
-  top: calc(225 * var(--s));
+  top: calc(185 * var(--s));
   z-index: 1;
   display: flex;
   justify-content: center;
@@ -427,8 +395,8 @@
 
   .mark {
     position: static;
-    width: 64px;
-    height: 64px;
+    width: 80px;
+    height: 80px;
     margin: 24px auto 0;
   }
 
@@ -513,12 +481,6 @@
     margin-top: 96px;
   }
 
-  /* Nothing is carried anywhere down here; the line stands as it is drawn. */
-  .invitationLit,
-  .cursor {
-    display: none;
-  }
-
   /*
    * The disciplines are a list to read once the page reflows, not something to
    * press: with no cursor to say where it leads, a tap on a word would be a
@@ -531,6 +493,18 @@
     width: auto;
     height: auto;
     margin-top: 64px;
+  }
+
+  /*
+   * A phone is narrower than some of the pairs, so here they give way and the
+   * run breaks between any two disciplines rather than overshooting the screen.
+   */
+  .pair {
+    white-space: normal;
+  }
+
+  .pair > wbr {
+    display: revert;
   }
 
   .servicesTarget {
@@ -548,7 +522,6 @@
   .invitationLine {
     /* Stays on its one sweeping line, so it is sized to fit the narrowest. */
     font-size: clamp(44px, 16vw, 180px);
-    -webkit-text-stroke-width: 1px;
   }
 
   .invitationPill {

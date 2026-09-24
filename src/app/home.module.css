@@ -9,9 +9,14 @@
   position: fixed;
   top: 0;
   bottom: 0;
-  /* Column three of the same grid the mosaic is built on. */
-  left: calc(50% - 129.6 * var(--s));
-  width: calc(259.2 * var(--s));
+  /*
+   * Column three of the same grid the mosaic is built on — the middle one, so
+   * it is simply centred. Measured in the mosaic's own unit rather than the
+   * page's zoom, or past 1920 it would stop growing while its column carried
+   * on without it.
+   */
+  left: calc(50% - var(--centre) * var(--u) / 2);
+  width: calc(var(--centre) * var(--u));
   z-index: 2;
   pointer-events: none;
 
@@ -87,8 +92,14 @@
    */
   top: calc((var(--mark-top) + var(--mark-size) + var(--line-gap)) * var(--s));
   bottom: calc(56 * var(--s));
-  left: calc(50% - 117.5 * var(--s));
-  width: calc(235 * var(--s));
+  /*
+   * The width of its own column, which is the 324 the line is set to and the
+   * panel already is — so the gutter either side stands empty between it and
+   * the work beside it.
+   */
+  left: 0;
+  right: 0;
+  width: auto;
   display: flex;
   flex-direction: column;
   /* The least that may ever stand between the line and the way on. */
@@ -98,10 +109,16 @@
 .tagline {
   margin: 0;
   font-family: var(--font-sans);
-  font-weight: 400;
-  font-size: calc(20 * var(--s));
+  /* The medium cut, which is loaded alongside the regular. */
+  font-weight: 500;
+  /*
+   * 23px flat, not 23 of the design's units: this is the one line on the page
+   * asked for at a size rather than a proportion, so it reads the same however
+   * wide the window is.
+   */
+  font-size: 23px;
   line-height: 1.3;
-  letter-spacing: calc(-0.4 * var(--s));
+  letter-spacing: -0.02em;
   color: var(--color-ink);
   text-align: center;
 }
@@ -154,8 +171,8 @@
   .tagline {
     max-width: 32ch;
     margin: 56px auto 0;
-    font-size: clamp(18px, 5vw, 20px);
-    letter-spacing: -0.4px;
+    font-size: clamp(19px, 5.8vw, 23px);
+    letter-spacing: -0.46px;
   }
 
   /*

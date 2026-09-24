@@ -4,37 +4,31 @@
 }
 
 /*
- * The canvas is a proportional zoom of the design: 1440 design units wide,
- * multiplied by --s. Tiles sit on it at their exact design coordinates. Its
- * width and height come from the tile data, so the page lengthens on its own as
- * rows are appended.
+ * The canvas is the full width of the page, and as tall as its deepest column.
+ * That height is built from the tile data and handed in whole, so the page
+ * lengthens on its own as work is added.
  */
-/* The grid's own gutter, the same above, below and either side of a tile. */
-.loop {
-  --gap: calc(24 * var(--s));
-}
-
 .canvas {
   position: relative;
-  width: calc(var(--canvas-width) * var(--s));
-  height: calc(var(--canvas-height) * var(--s));
-  margin-inline: auto;
+  width: 100%;
+  height: var(--canvas-height);
 }
 
 /*
- * Placed on the canvas from the design coordinates the tile carries. A tile is
- * the piece and its title together, and it is tiles the 24px gutter is
- * measured between — the title travels with the work it names rather than
- * floating in the space between two of them.
+ * Placed by counting: so many gutters, which never change, and so much artwork
+ * before it, which does. A tile is the piece and its title together, and it is
+ * tiles the gutter is measured between — the title travels with the work it
+ * names rather than floating in the space between two of them.
  */
 .tile {
   position: absolute;
-  left: calc(var(--x) * var(--s));
-  top: calc(var(--y) * var(--s));
-  width: calc(var(--w) * var(--s));
-  height: calc(var(--h) * var(--s));
-  /* The title's line and the air above it, given up by the frame below. */
-  --title-band: calc(24 * var(--s));
+  left: calc(var(--xg) * var(--gap) + var(--xd) * var(--u));
+  top: calc(
+    var(--yg) * var(--gap) + var(--yb) * var(--band) + var(--yd) * var(--u)
+  );
+  width: calc(var(--w) * var(--u));
+  /* The artwork, which grows, and the caption's band, which does not. */
+  height: calc(var(--art) * var(--u) + var(--band));
 }
 
 /* The artwork's own box: the tile, less the band its title stands in. */
@@ -42,7 +36,7 @@
   position: relative;
   display: block;
   width: 100%;
-  height: calc(100% - var(--title-band));
+  height: calc(100% - var(--band));
   overflow: hidden;
   background-color: var(--color-tile);
 }
@@ -62,23 +56,39 @@
   object-fit: cover;
 }
 
-/* Under the work it names, inside the tile's own foot. */
+/*
+ * Under the work it names, inside the tile's own foot: the project, and the
+ * line saying what it was and when. Both in the sans — the display face signs
+ * the page, not the work.
+ */
 .caption {
   display: block;
-  height: var(--title-band);
-  padding-top: calc(8 * var(--s));
+  height: var(--band);
+  padding-top: var(--caption-top);
   margin: 0;
-  font-family: var(--font-mono);
-  font-weight: 300;
-  font-size: calc(12 * var(--s));
-  line-height: 1;
-  letter-spacing: 0.02em;
-  color: var(--color-ink);
-  text-align: left;
-  text-transform: uppercase;
+  font-family: var(--font-sans);
+  line-height: var(--caption-line);
+  overflow: hidden;
+}
+
+.name,
+.note {
+  display: block;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.name {
+  font-weight: 500;
+  font-size: var(--caption-name);
+  color: var(--color-ink);
+}
+
+.note {
+  font-weight: 400;
+  font-size: var(--caption-note);
+  color: var(--color-muted);
 }
 
 /*
@@ -137,8 +147,6 @@
 
   .caption {
     height: auto;
-    padding-top: 8px;
-    font-size: 11px;
   }
 }
 

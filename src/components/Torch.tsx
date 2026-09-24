@@ -20,9 +20,25 @@ import { useEffect, useRef, type ReactNode } from "react";
  */
 export function Torch({
   className,
+  palette,
+  parts,
+  trail = false,
   children,
 }: {
   className?: string;
+  /**
+   * Fills for the pill to draw from, if it is not to keep one colour. A fresh
+   * one is taken on the way in, and again whenever the pointer finds a
+   * different part — never the same colour twice running.
+   */
+  palette?: readonly string[];
+  /** What counts as a part: a selector for the pieces worth re-colouring on. */
+  parts?: string;
+  /**
+   * Let the pill follow rather than stick: it runs after the pointer and
+   * catches up, instead of standing exactly where the pointer is.
+   */
+  trail?: boolean;
   children: ReactNode;
 }) {
   const band = useRef<HTMLDivElement>(null);
@@ -35,16 +51,81 @@ export function Torch({
       return;
     }
 
+    // A pill that runs after the pointer is motion for its own sake, so it is
+    // the first thing to go when motion is asked to stop.
+    const chases =
+      trail && !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
     let pointer: { x: number; y: number } | null = null;
+    /** Where the pointer is, in the band's own space. */
+    let mark = { x: 0, y: 0 };
+    /** And where the pill is, which is not always the same place. */
     let at = { x: 0, y: 0 };
     let waiting = false;
+    let running = 0;
     let lit = false;
+    let tone: string | null = null;
+    let part: Element | null = null;
+
+    /** A new fill for the pill, never the one it is already wearing. */
+    const draw = () => {
+      if (!palette?.length) return;
+      let next = tone;
+      do {
+        next = palette[Math.floor(Math.random() * palette.length)];
+      } while (palette.length > 1 && next === tone);
+      tone = next;
+      element.style.setProperty("--pill", next);
+    };
+
+    const place = () => {
+      element.style.setProperty("--tx", `${at.x}px`);
+      element.style.setProperty("--ty", `${at.y}px`);
+    };
+
+    /**
+     * The chase, a frame at a time: the pill closes a share of whatever is left
+     * between it and the pointer, which is a lot at first and less as it
+     * arrives, so it runs after the pointer and settles rather than stopping
+     * dead. It gives up the frame once there is nothing left to close.
+     */
+    const CLOSED = 0.18;
+    const follow = () => {
+      const dx = mark.x - at.x;
+      const dy = mark.y - at.y;
+      if (Math.abs(dx) < 0.1 && Math.abs(dy) < 0.1) {
+        running = 0;
+        at = { ...mark };
+        place();
+        return;
+      }
+      at = { x: at.x + dx * CLOSED, y: at.y + dy * CLOSED };
+      place();
+      sense();
+      running = requestAnimationFrame(follow);
+    };
+
+    /**
+     * Which part the pointer has reached, asked of the page rather than
+     * listened for: the pill is the cursor here, and the parts are inside a
+     * link that would answer for all of them.
+     */
+    const sense = () => {
+      if (!parts || !pointer) return;
+      const found =
+        document.elementFromPoint(pointer.x, pointer.y)?.closest(parts) ?? null;
+      if (found && found !== part) {
+        part = found;
+        draw();
+      }
+    };
 
     /* One write a frame, however fast the pointer reports. */
     const paint = () => {
       waiting = false;
-      element.style.setProperty("--tx", `${at.x}px`);
-      element.style.setProperty("--ty", `${at.y}px`);
+      at = { ...mark };
+      place();
+      sense();
     };
 
     const check = () => {
@@ -59,13 +140,29 @@ export function Torch({
       if (lit !== inside) {
         lit = inside;
         element.toggleAttribute("data-lit", inside);
+        // Leaving forgets the part, so coming back is a change like any other.
+        part = null;
+        if (inside) {
+          draw();
+          // Arriving, the pill is simply there. A chase from wherever it was
+          // last left would be a flight in from off the section.
+          if (pointer) {
+            at = { x: pointer.x - box.left, y: pointer.y - box.top };
+          }
+        }
       }
 
       if (!inside || !pointer) return;
 
       // The cursor is drawn inside the section, so it is placed in the
       // section's own space rather than the window's.
-      at = { x: pointer.x - box.left, y: pointer.y - box.top };
+      mark = { x: pointer.x - box.left, y: pointer.y - box.top };
+
+      if (chases) {
+        if (!running) running = requestAnimationFrame(follow);
+        return;
+      }
+
       if (waiting) return;
       waiting = true;
       requestAnimationFrame(paint);
@@ -89,11 +186,12 @@ export function Torch({
     window.addEventListener("scroll", check, { passive: true });
 
     return () => {
+      if (running) cancelAnimationFrame(running);
       window.removeEventListener("pointermove", onMove);
       document.removeEventListener("pointerout", onOut);
       window.removeEventListener("scroll", check);
     };
-  }, []);
+  }, [palette, parts, trail]);
 
   return (
     <div ref={band} className={className}>

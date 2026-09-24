@@ -1,16 +1,18 @@
 import {
-  COLUMN_WIDTH,
+  CENTRE_COLUMN,
+  CENTRE_WIDTH,
+  COLUMN_WIDTHS,
   COLUMN_X,
   GUTTER,
   IDENTITY_CONTENT_HEIGHT,
-  IDENTITY_RECT,
+  type Place,
   type Rect,
 } from "./design";
 
 /**
- * A tile holds either a still or a silent looping clip. Both are cropped to the
- * tile with object-fit, so any aspect ratio works — though artwork close to the
- * tile's own proportions loses least at the edges.
+ * A tile holds either a still or a silent looping clip, and takes the shape of
+ * whichever it holds: a tile's height is its artwork's height, so nothing is
+ * ever cropped to fit a slot it was not made for.
  */
 export type TileMedia =
   | { kind: "image"; src: string }
@@ -21,17 +23,58 @@ export type Tile = {
   id: string;
   /** Figma node id, present on the tiles lifted straight from the design. */
   node?: string;
-  /** Position on the canvas, in design pixels. */
+  /** Position on the canvas, in design pixels, as the frame draws it. */
   rect: Rect;
+  /** The same position counted in gutters and artwork, for any wider screen. */
+  place: Place;
   /** Artwork. Leave undefined and the tile stays the grey placeholder. */
   media?: TileMedia;
   /** Describe the work, not the file — this is what screen readers announce. */
   alt?: string;
-  /** Project name, shown on hover. */
+  /** Project name, as it is written under the work. */
   title?: string;
+  /** What the work was, and when — the line under the name. */
+  note?: string;
   /** Optional link to a case study. */
   href?: string;
 };
+
+/**
+ * A piece of work: what it is, and the proportions it was made in.
+ *
+ * The ratio is the file's own, measured from it rather than guessed — it is
+ * what gives the tile its height, so a wrong figure here is a stretched or
+ * cropped piece on the page.
+ */
+type Art = Pick<Tile, "media" | "alt" | "title" | "note"> & {
+  ratio: number;
+};
+
+/**
+ * How each project is signed: its name, and the line under it saying what the
+ * work was and when.
+ *
+ * The years are the one thing here not taken from the files or the design —
+ * they are placeholders, and want correcting against the studio's own record
+ * before this goes anywhere public.
+ */
+type Project = { title: string; note: string };
+
+const ARTEMIS: Project = { title: "Artemis", note: "Brand Identity, 2026" };
+const MOLARS: Project = {
+  title: "Outsmarted My Molars",
+  note: "Campaign, 2025",
+};
+const GLASS: Project = { title: "Glass Banking", note: "Brand Identity, 2025" };
+const DABA: Project = { title: "DABA", note: "Brand Identity, 2024" };
+const WOKA: Project = { title: "woka", note: "Brand Identity, 2024" };
+const TWF: Project = {
+  title: "Tech for the World Forum",
+  note: "Brand Identity, 2023",
+};
+const NOMADI: Project = { title: "Nomadi", note: "Brand Identity, 2023" };
+const MOFOOD: Project = { title: "MO.FOOD", note: "Packaging, 2025" };
+const MOTION: Project = { title: "Motion", note: "3D & Motion, 2026" };
 
 /**
  * Artwork helpers. Each returns the media plus the descriptions that travel
@@ -40,25 +83,41 @@ export type Tile = {
 function work(
   src: string,
   alt: string,
-  title: string,
-): Pick<Tile, "media" | "alt" | "title"> {
-  return { media: { kind: "image", src: `/images/${src}` }, alt, title };
-}
-
-function clip(n: number): Pick<Tile, "media" | "alt" | "title"> {
+  { title, note }: Project,
+  ratio: number,
+): Art {
   return {
-    media: { kind: "video", src: `/images/motion-${String(n).padStart(2, "0")}.mp4` },
-    alt: "Motion study",
-    title: "MOTION",
+    media: { kind: "image", src: `/images/${src}` },
+    alt,
+    title,
+    note,
+    ratio,
   };
 }
+
+function clip(n: number, ratio = 720 / 900): Art {
+  return {
+    media: {
+      kind: "video",
+      src: `/images/motion-${String(n).padStart(2, "0")}.mp4`,
+    },
+    alt: "Motion study",
+    title: MOTION.title,
+    note: MOTION.note,
+    ratio,
+  };
+}
+
+/** The one clip shot wide, which only the middle column can seat. */
+const widescreen = () => clip(4, 1920 / 1080);
 
 /** Artemis — brand identity for a fossil identification app. */
 const artemis = (n: number) =>
   work(
     `artemis-${String(n).padStart(2, "0")}.jpg`,
     "Artemis — brand identity for a fossil identification app",
-    "ARTEMIS",
+    ARTEMIS,
+    2160 / 2700,
   );
 
 /** Outsmarted My Molars — sticker campaign. */
@@ -66,7 +125,8 @@ const molars = (n: number) =>
   work(
     `molars-${String(n).padStart(2, "0")}.jpg`,
     "Outsmarted My Molars — sticker campaign",
-    "OUTSMARTED MY MOLARS",
+    MOLARS,
+    1080 / 1350,
   );
 
 /** Glass Banking — identity for a fintech product. */
@@ -77,14 +137,15 @@ const GLASS_ALT = [
   "Glass Banking — a pull quote from the client on building a transparent brand",
 ];
 const glass = (n: number) =>
-  work(`glass-0${n}.jpg`, GLASS_ALT[n - 1], "GLASS BANKING");
+  work(`glass-0${n}.jpg`, GLASS_ALT[n - 1], GLASS, 1440 / 1440);
 
 /** DABA — identity for a body care range. */
 const DABA_ALT = [
   "DABA — the logotype set across a close-up portrait",
   "DABA — body wash bottles photographed against the brand's terracotta palette",
 ];
-const daba = (n: number) => work(`daba-0${n}.jpg`, DABA_ALT[n - 1], "DABA");
+const daba = (n: number) =>
+  work(`daba-0${n}.jpg`, DABA_ALT[n - 1], DABA, 1440 / 1800);
 
 /** woka — identity for a finance platform for digital workers. */
 const WOKA_ALT = [
@@ -94,7 +155,7 @@ const WOKA_ALT = [
   "woka — campaign image: finance infrastructure for digital workers",
 ];
 const woka = (n: number) =>
-  work(`woka-0${n}.jpg`, WOKA_ALT[n - 1], "WOKA");
+  work(`woka-0${n}.jpg`, WOKA_ALT[n - 1], WOKA, 3198 / 3198);
 
 /** Tech for the World Forum — identity for a technology conference. */
 const TWF_ALT = [
@@ -102,14 +163,15 @@ const TWF_ALT = [
   "Tech for the World Forum — the logotype with the globe set into the word",
 ];
 const twf = (n: number) =>
-  work(`twf-0${n}.jpg`, TWF_ALT[n - 1], "TECH FOR THE WORLD FORUM");
+  work(`twf-0${n}.jpg`, TWF_ALT[n - 1], TWF, 2184 / 2184);
 
 /** Nomadi — identity for a travel brand. */
 const nomadi = () =>
   work(
     "nomadi-01.jpg",
     "Nomadi — the wordmark over a portrait at the shoreline",
-    "NOMADI",
+    NOMADI,
+    1638 / 2048,
   );
 
 /** MO.FOOD — packaging for a dried seafood range. */
@@ -117,94 +179,234 @@ const mofood = () =>
   work(
     "mofood-01.avif",
     "MO.FOOD — packaging for the dried, ground and smoked shrimp range",
-    "MO.FOOD",
+    MOFOOD,
+    2048 / 1602,
   );
+
+/**
+ * The caption at the foot of a tile: the air above the project's name, the two
+ * line heights it and its note stand in, and the sizes they are set at.
+ *
+ * These are pixels, not design units. The caption is text at a size someone
+ * chose, the same on a laptop as on a wall — so the band it stands in holds
+ * too, and a tile is artwork that grows plus a band that does not, the way a
+ * column is artwork plus gutters.
+ *
+ * The stylesheet is given these rather than holding its own copy, because the
+ * band has to come to exactly the same figure. Anything left spare inside it
+ * shows up under the caption as space the gutter appears to gain.
+ */
+export const CAPTION = {
+  /** Between the work and the name under it. */
+  top: 8,
+  /** Line height for both, as a multiple of their size. */
+  line: 1.2,
+  name: 14,
+  note: 11,
+} as const;
+
+/** The band those three make, in pixels — and nothing besides them. */
+export const TITLE_BAND =
+  CAPTION.top + (CAPTION.name + CAPTION.note) * CAPTION.line;
+
+/**
+ * How tall the artwork in a tile is — the tile itself is this plus the band,
+ * which is added where the two kinds of height are kept apart. It depends on
+ * the column, since the middle one is wider than the rest.
+ */
+function artworkHeight(column: number, ratio: number) {
+  return COLUMN_WIDTHS[column] / ratio;
+}
 
 /**
  * The mosaic, as five column stacks.
  *
  * Every gap is GUTTER — between columns, between tiles, and at the join where
- * the page loops. That last one is why all five columns are the same total
- * height: a column finishing short would open a wider gap at the seam than
- * anywhere else in the grid.
+ * the page loops. A tile is as tall as the piece it holds, so nothing is
+ * cropped to a slot it was not made for.
  *
- * Column three carries the studio's name, so it holds a shorter tile above the
- * block and picks up the difference in its last tile.
+ * Which is why the columns are dealt by hand rather than by turn. The five have
+ * to finish on the same line, or a column ending short shows its shortfall as
+ * one wide gap at the loop's join — the one place the grid's gutter would not
+ * hold. And they have to finish level at every width, which takes more than
+ * matching totals: a height is so many gutters, which never change, plus so
+ * much artwork, which grows with the screen. Two columns stay level only if
+ * they match on both. So the four columns of work carry seven pieces each in
+ * the same proportions — five in 4:5 and two square.
+ *
+ * The middle column is the exception twice over: it is wider than the others,
+ * and the studio's name is the seventh thing in it rather than a piece of work.
+ * The name's height is whatever the other six leave, worked out below rather
+ * than set by hand — which is what lets this column hold pieces of any shape,
+ * and why the two that match nothing else stand here.
+ *
+ * Within that the order is free, and it is arranged to read: no project twice
+ * in a row down a column, and the squares spaced through the portraits rather
+ * than gathered.
+ *
+ * Every piece in the folder appears exactly once, but for `artemis-12`, which
+ * is held back — there are thirty-five and the grid seats thirty-four. Swap it
+ * in for any other Artemis frame.
  */
-/** What every column adds up to, the identity block included. */
-const COLUMN_TOTAL = 2228;
-
-/**
- * Tile heights per column, drawn from the set the design uses — with the last
- * tile of each left out. That one is computed so the column reaches
- * COLUMN_TOTAL, which is what keeps all five ending on the same line and the
- * loop seam as even as every other gap. Change anything here and the balance
- * still holds.
- */
-const COLUMN_PLAN: number[][] = [
-  [295, 319, 319, 286, 353, 303],
-  [319, 353, 353, 269, 319, 329],
-  // Column three: the tile above the identity block, then those below it.
-  [IDENTITY_RECT.y - GUTTER * 2, 353, 331, 319, 331],
-  [331, 286, 286, 353, 295, 324],
-  [353, 269, 269, 319, 353, 353],
+const COLUMN_ART: Art[][] = [
+  [artemis(1), woka(1), molars(1), artemis(2), glass(1), clip(1), artemis(3)],
+  [clip(2), artemis(4), twf(1), molars(2), artemis(5), woka(2), daba(1)],
+  // The middle column, and the wide piece stands first: the name below it then
+  // lands where the design puts it on the first screen. The main page gives
+  // this column to its panel, so what stands here is what /alt shows.
+  [mofood(), artemis(6), glass(2), nomadi(), widescreen(), woka(3)],
+  [artemis(7), molars(3), glass(3), artemis(8), clip(3), twf(2), artemis(9)],
+  [daba(2), artemis(10), woka(4), molars(4), artemis(11), glass(4), clip(5)],
 ];
 
-const COLUMNS: number[][] = COLUMN_PLAN.map((heights, column) => {
-  // The identity block sits in column three and counts toward its total.
-  const carried = column === 2 ? IDENTITY_RECT.height : 0;
-  const balance =
-    COLUMN_TOTAL - carried - heights.reduce((sum, h) => sum + h, 0);
-  return [...heights, balance];
-});
+/** The tile the studio's name stands under, in the column that is its own. */
+const IDENTITY_ROW = 0;
 
-/** Stacks one column, leaving room for the identity block where it sits. */
-function stack(column: number, heights: number[]): Tile[] {
+/** How much artwork a stack of pieces comes to — the part that grows. */
+function columnArtwork(column: number, pieces: Art[]) {
+  return pieces.reduce(
+    (total, piece) => total + artworkHeight(column, piece.ratio),
+    0,
+  );
+}
+
+/**
+ * The height of the name's block: exactly what the middle column is short.
+ *
+ * Only the artwork is counted. Every column carries seven gutters and seven
+ * bands whatever stands in it — the name's block takes a band of its own, so
+ * that stays true — which leaves the artwork as the one part that has to be
+ * made to agree, and this is what makes it agree.
+ *
+ * The block is a logotype, a tagline and air between them, and the air is the
+ * one measurement on the page with no work of its own to fit. If a change to
+ * the artwork ever pushed it somewhere unreasonable, the check below says so.
+ */
+export const IDENTITY_HEIGHT =
+  columnArtwork(0, COLUMN_ART[0]) -
+  columnArtwork(CENTRE_COLUMN, COLUMN_ART[CENTRE_COLUMN]);
+
+/**
+ * Stacks one column, leaving room for the identity block where it sits.
+ *
+ * Each tile is given its position twice over: as a design coordinate, and as
+ * the count of gutters and artwork that coordinate is made of. The second is
+ * what holds up past the design width, where the gutters stop growing and the
+ * artwork does not.
+ */
+function stack(column: number, pieces: Art[]): Tile[] {
   const x = COLUMN_X[column];
+  const width = COLUMN_WIDTHS[column];
   let y = GUTTER;
+  let gaps = 1;
+  let bands = 0;
+  let stacked = 0;
 
-  return heights.map((height, row) => {
+  return pieces.map((piece, row) => {
+    const artwork = artworkHeight(column, piece.ratio);
     const tile: Tile = {
       id: `c${column + 1}-r${row + 1}`,
-      rect: { x, y, width: COLUMN_WIDTH, height },
+      rect: { x, y, width, height: artwork + TITLE_BAND },
+      place: { column, gaps, bands, stacked },
+      media: piece.media,
+      alt: piece.alt,
+      title: piece.title,
+      note: piece.note,
     };
 
-    y += height + GUTTER;
+    y += artwork + TITLE_BAND + GUTTER;
+    gaps += 1;
+    bands += 1;
+    stacked += artwork;
 
-    // The studio's name occupies the slot after the first tile of column three.
-    if (column === 2 && row === 0) {
-      y = IDENTITY_RECT.y + IDENTITY_RECT.height + GUTTER;
+    // The name's block, which takes a band of its own so that every column
+    // carries the same count of them however it is made up.
+    if (column === CENTRE_COLUMN && row === IDENTITY_ROW) {
+      y += IDENTITY_HEIGHT + TITLE_BAND + GUTTER;
+      gaps += 1;
+      bands += 1;
+      stacked += IDENTITY_HEIGHT;
     }
 
     return tile;
   });
 }
 
-const COLUMN_TILES = COLUMNS.map((heights, column) => stack(column, heights));
+const COLUMN_TILES = COLUMN_ART.map((pieces, column) => stack(column, pieces));
 
 /**
- * Artwork, applied to the tiles in reading order — left to right along each
- * row, then down. Projects are interleaved rather than grouped, so the grid
- * mixes as you scroll. Add entries as work comes in; tiles beyond the end of
- * this list render as the grey placeholder from the design.
+ * The balance the grid rests on, checked rather than trusted.
  *
- * `artemis-12.jpg` is held back — there are 35 pieces for 34 tiles, and Artemis
- * is the largest set. Swap it in for any entry here.
+ * A column out of step is not a crash and not a type error — it is a wide gap
+ * at the loop's join that only shows up on the page, so it is caught here
+ * instead, while the work is being changed.
  */
-const ARTWORK = [
-  woka(1), artemis(1), twf(1), clip(1), molars(1),
-  glass(1), clip(2), daba(1), artemis(2),
-  nomadi(), artemis(3), mofood(), clip(3), woka(2),
-  glass(2), molars(2), artemis(4), clip(4), twf(2),
-  artemis(5), woka(3), molars(3), clip(5), glass(3),
-  daba(2), artemis(6), woka(4), artemis(7), glass(4),
-  artemis(8), molars(4), artemis(9), artemis(10), artemis(11),
-];
+if (process.env.NODE_ENV !== "production") {
+  const feet = COLUMN_TILES.map((column) => {
+    const last = column[column.length - 1];
+    return {
+      gaps: last.place.gaps,
+      bands: last.place.bands + 1,
+      stacked: last.place.stacked + (last.rect.height - TITLE_BAND),
+    };
+  });
 
-/** Every tile, ordered by row then column, with artwork applied in that order. */
-export const tiles: Tile[] = COLUMN_TILES.flat()
-  .sort((a, b) => a.rect.y - b.rect.y || a.rect.x - b.rect.x)
-  .map((tile, index) => ({ ...tile, ...(ARTWORK[index] ?? {}) }));
+  const odd = feet.findIndex(
+    (foot) =>
+      foot.gaps !== feet[0].gaps ||
+      foot.bands !== feet[0].bands ||
+      Math.abs(foot.stacked - feet[0].stacked) > 1,
+  );
+  if (odd > 0) {
+    throw new Error(
+      `Column ${odd + 1} of the mosaic finishes out of step with the first: ` +
+        `${feet[odd].gaps} gutters, ${feet[odd].bands} bands and ` +
+        `${feet[odd].stacked.toFixed(1)}px of artwork against ` +
+        `${feet[0].gaps}, ${feet[0].bands} and ` +
+        `${feet[0].stacked.toFixed(1)}px. Every column needs the same count ` +
+        "of tiles and the same shapes as the rest — see COLUMN_ART.",
+    );
+  }
+
+  if (IDENTITY_HEIGHT + TITLE_BAND < IDENTITY_CONTENT_HEIGHT + 120) {
+    throw new Error(
+      `The identity block is down to ${IDENTITY_HEIGHT.toFixed(1)}px, ` +
+        "which leaves too little air between the logotype and the tagline. " +
+        "The middle column is carrying too much — see COLUMN_ART.",
+    );
+  }
+}
+
+/** Every tile, ordered by row then column. */
+export const tiles: Tile[] = COLUMN_TILES.flat().sort(
+  (a, b) => a.rect.y - b.rect.y || a.rect.x - b.rect.x,
+);
+
+/**
+ * Where the studio's name stands on the first screen.
+ *
+ * It follows the tile above it rather than sitting at a figure of its own: that
+ * tile is now as tall as the piece it holds, so the block's place is wherever
+ * the column has reached by then.
+ */
+const FIRST_IN_COLUMN_THREE = artworkHeight(
+  CENTRE_COLUMN,
+  COLUMN_ART[CENTRE_COLUMN][IDENTITY_ROW].ratio,
+);
+
+export const identityRect: Rect = {
+  x: COLUMN_X[CENTRE_COLUMN],
+  y: 2 * GUTTER + TITLE_BAND + FIRST_IN_COLUMN_THREE,
+  width: CENTRE_WIDTH,
+  height: IDENTITY_HEIGHT + TITLE_BAND,
+};
+
+export const identityPlace: Place = {
+  column: CENTRE_COLUMN,
+  gaps: 2,
+  bands: 1,
+  stacked: FIRST_IN_COLUMN_THREE,
+};
 
 /**
  * Where the studio's name can stand in the grid besides its place on the first
@@ -224,13 +426,15 @@ export type IdentitySlot = {
   tile: string;
   /** Its footprint, which the name takes over whole. */
   rect: Rect;
+  /** And where that footprint sits, counted as the grid counts it. */
+  place: Place;
 };
 
 /** Whether a tile is the one directly above or below the block on screen one. */
 function bordersTheFixedBlock({ rect }: Tile) {
-  if (rect.x !== IDENTITY_RECT.x) return false;
-  const above = IDENTITY_RECT.y - (rect.y + rect.height);
-  const below = rect.y - (IDENTITY_RECT.y + IDENTITY_RECT.height);
+  if (rect.x !== identityRect.x) return false;
+  const above = identityRect.y - (rect.y + rect.height);
+  const below = rect.y - (identityRect.y + identityRect.height);
   return Math.abs(above) <= GUTTER || Math.abs(below) <= GUTTER;
 }
 
@@ -239,15 +443,46 @@ export const identitySlots: IdentitySlot[] = tiles
     (tile) =>
       tile.rect.height >= MIN_HOST_HEIGHT && !bordersTheFixedBlock(tile),
   )
-  .map((tile) => ({ tile: tile.id, rect: tile.rect }));
+  .map((tile) => ({ tile: tile.id, rect: tile.rect, place: tile.place }));
 
 /**
- * Height of the canvas: the lowest tile edge, with no margin beneath it.
+ * How far each column reaches, in the two parts a height is made of: the
+ * gutters, which hold at GUTTER whatever the screen, and the artwork between
+ * them, which grows with it.
+ *
+ * The canvas is as tall as the deepest of them — and which one that is can
+ * change with the width, since one column may carry more gutters and another
+ * more artwork, so the stylesheet is given all five and takes the maximum
+ * itself rather than being handed a winner chosen at one width.
+ */
+export const COLUMN_METRICS = COLUMN_TILES.map((column) => {
+  const last = column[column.length - 1];
+  return {
+    gaps: last.place.gaps,
+    bands: last.place.bands + 1,
+    stacked: last.place.stacked + (last.rect.height - TITLE_BAND),
+  };
+});
+
+/**
+ * Height of the canvas at the design width: the lowest tile edge, with no
+ * margin beneath it.
  *
  * The page loops, so there is no bottom of the page to leave room under — the
  * next pass brings its own top margin, and that alone is the gap at the seam.
- * A margin here as well would make the join twice as wide as every other gap.
  */
 export const canvasHeight = Math.max(
   ...tiles.map((tile) => tile.rect.y + tile.rect.height),
 );
+
+/**
+ * How much shorter than the deepest each column finishes, at the design width.
+ *
+ * A column that finishes short leaves that much extra above the seam where the
+ * page repeats — the one place the grid's 24px does not hold, and the price of
+ * every piece keeping its own proportions.
+ */
+export const COLUMN_SLACK = COLUMN_TILES.map((column) => {
+  const last = column[column.length - 1];
+  return Math.round(canvasHeight - (last.rect.y + last.rect.height));
+});

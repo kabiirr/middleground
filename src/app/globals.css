@@ -61,6 +61,20 @@
   --color-pill-quiet: rgb(255 255 255 / 10%);
   --color-pill-quiet-ink: var(--color-ink);
 
+  /*
+   * The tones the pill takes as a cursor among the disciplines. It draws one at
+   * random and holds it until the pointer finds another discipline, so the
+   * colour marks a move rather than a meaning — which is why they are only ever
+   * these, light enough to keep the pill's black label readable.
+   */
+  --color-tone-paper: #edeeea;
+  --color-tone-lilac: #b97dfb;
+  --color-tone-sky: #6fa2f5;
+  --color-tone-coral: #f2a67d;
+  --color-tone-mint: #a9dcb5;
+  --color-tone-butter: #f4dc64;
+  --color-tone-blossom: #e9aedb;
+
   --font-mono: "Cartograph CF", ui-monospace, "SF Mono", Menlo, monospace;
   --font-sans: "Articulat CF", ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-display: "Miller Display", ui-serif, Georgia, "Times New Roman", serif;

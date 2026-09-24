@@ -16,7 +16,7 @@ import type { Tile } from "@/data/projects";
 import styles from "./ArtworkView.module.css";
 
 /** What a tile hands over when it is opened. */
-type Shown = Pick<Tile, "media" | "alt" | "title">;
+type Shown = Pick<Tile, "media" | "alt" | "title" | "note">;
 
 const ArtworkContext = createContext<((tile: Shown) => void) | null>(null);
 
@@ -120,7 +120,12 @@ export function ArtworkProvider({ children }: { children: ReactNode }) {
             ) : null}
 
             {shown.title ? (
-              <figcaption className={styles.caption}>{shown.title}</figcaption>
+              <figcaption className={styles.caption}>
+                <span className={styles.name}>{shown.title}</span>
+                {shown.note ? (
+                  <span className={styles.note}>{shown.note}</span>
+                ) : null}
+              </figcaption>
             ) : null}
           </figure>
         </div>

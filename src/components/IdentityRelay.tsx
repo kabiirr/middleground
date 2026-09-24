@@ -2,7 +2,8 @@
 
 import { useEffect } from "react";
 
-import { identitySlots } from "@/data/projects";
+import { COLUMN_BEFORE } from "@/data/design";
+import { TITLE_BAND, identitySlots } from "@/data/projects";
 import { gsap } from "@/lib/motion";
 
 /** How far beyond the viewport a slot must sit before it can be moved to. */
@@ -46,10 +47,18 @@ export function IdentityRelay() {
     /** Both passes of the mosaic hold the same slot, so they move together. */
     const place = (slot: (typeof identitySlots)[number]) => {
       roamers.forEach((roamer) => {
-        roamer.style.setProperty("--slot-x", `${slot.rect.x}`);
-        roamer.style.setProperty("--slot-y", `${slot.rect.y}`);
+        // Counted as the grid counts it: gutters, which hold, and artwork,
+        // which grows with the screen.
+        roamer.style.setProperty("--slot-xg", `${slot.place.column + 1}`);
+        roamer.style.setProperty("--slot-xd", `${COLUMN_BEFORE[slot.place.column]}`);
+        roamer.style.setProperty("--slot-yg", `${slot.place.gaps}`);
+        roamer.style.setProperty("--slot-yb", `${slot.place.bands}`);
+        roamer.style.setProperty("--slot-yd", `${slot.place.stacked}`);
         roamer.style.setProperty("--slot-w", `${slot.rect.width}`);
-        roamer.style.setProperty("--slot-h", `${slot.rect.height}`);
+        roamer.style.setProperty(
+          "--slot-art",
+          `${slot.rect.height - TITLE_BAND}`,
+        );
         roamer.dataset.placed = "";
       });
 

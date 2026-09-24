@@ -71,6 +71,41 @@
   text-underline-offset: 0.25em;
 }
 
+/*
+ * The ground the pointer has to be on for the cursor to change: the band the
+ * headline stands in, from the top of its own line to the foot of the page.
+ * The words are what it is for, so the band is no taller than they are.
+ */
+.reach {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(352 * var(--s));
+
+  /* Where the pointer is, in this section's own space. */
+  --tx: 50%;
+  --ty: 50%;
+}
+
+/* The whole band leads to the address, and reads as the words inside it. */
+.reachTarget {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+/*
+ * Where a pill is carrying the cursor, the cursor itself stands down — on
+ * everything inside, not only the band. The link under the pointer is given
+ * `cursor: pointer` by the browser's own stylesheet, and a rule of its own
+ * beats a value inherited from above.
+ */
+.reach[data-lit],
+.reach[data-lit] * {
+  cursor: none;
+}
+
 .headline {
   position: absolute;
   /* Sits flush with the bottom edge of the frame. */
@@ -143,6 +178,19 @@
     .details {
       padding-inline: 16px;
     }
+  }
+
+  /* The band stops holding its own place and simply follows the page. */
+  .reach {
+    position: static;
+    height: auto;
+    margin-top: auto;
+  }
+
+  .reachTarget {
+    position: static;
+    inset: auto;
+    display: block;
   }
 
   .headline {

@@ -1,6 +1,11 @@
 import type { CSSProperties } from "react";
 
-import { IDENTITY_RECT, LOGO_SIZE, toStyle } from "@/data/design";
+import { LOGO_SIZE, toStyle } from "@/data/design";
+import {
+  IDENTITY_HEIGHT,
+  identityPlace,
+  identityRect,
+} from "@/data/projects";
 import { site } from "@/data/site";
 
 import styles from "./Identity.module.css";
@@ -26,7 +31,13 @@ export function Identity({
   intro?: boolean;
 }) {
   // The roaming copy is positioned by IdentityRelay; the fixed one by the design.
-  const style = (roaming ? undefined : toStyle(IDENTITY_RECT)) as CSSProperties;
+  const style = roaming
+    ? undefined
+    : ({
+        ...toStyle(identityRect, identityPlace),
+        // The part of its height that grows, the caption band aside.
+        "--art": IDENTITY_HEIGHT,
+      } as CSSProperties);
 
   return (
     <div

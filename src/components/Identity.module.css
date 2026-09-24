@@ -11,10 +11,18 @@
  */
 .identity {
   position: absolute;
-  left: calc(var(--x, 0) * var(--s));
-  top: calc(var(--y, 0) * var(--s));
-  width: calc(var(--w, 0) * var(--s));
-  height: calc(var(--h, 0) * var(--s));
+  left: calc(var(--xg, 0) * var(--gap) + var(--xd, 0) * var(--u));
+  top: calc(
+    var(--yg, 0) * var(--gap) + var(--yb, 0) * var(--band) +
+      var(--yd, 0) * var(--u)
+  );
+  width: calc(var(--w, 0) * var(--u));
+  /*
+   * Artwork that grows plus a band that does not, as a tile is. The block takes
+   * a band of its own so that every column carries the same count of them
+   * however it is made up — see IDENTITY_HEIGHT.
+   */
+  height: calc(var(--art, 0) * var(--u) + var(--band));
   z-index: 1;
   display: flex;
   flex-direction: column;
@@ -76,11 +84,14 @@
  */
 .roaming {
   composes: identity;
-  left: calc(var(--slot-x, 0) * var(--s));
-  top: calc(var(--slot-y, 0) * var(--s));
-  width: calc(var(--slot-w, 0) * var(--s));
+  left: calc(var(--slot-xg, 0) * var(--gap) + var(--slot-xd, 0) * var(--u));
+  top: calc(
+    var(--slot-yg, 0) * var(--gap) + var(--slot-yb, 0) * var(--band) +
+      var(--slot-yd, 0) * var(--u)
+  );
+  width: calc(var(--slot-w, 0) * var(--u));
   /* Exactly its host tile, so the gutters around it are the grid's own. */
-  height: calc(var(--slot-h, 0) * var(--s));
+  height: calc(var(--slot-art, 0) * var(--u) + var(--band));
   visibility: hidden;
 }
 
