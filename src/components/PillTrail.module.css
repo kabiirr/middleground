@@ -1,0 +1,37 @@
+/*
+ * Where the dropped pills live and land. It covers the section it is put in and
+ * takes no pointer events — the words underneath keep every one of them — and
+ * it clips, so nothing tumbles out of the band it was dropped in.
+ */
+.layer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/*
+ * A pill the cursor has let fall: the navigation's own shape and face, in one
+ * of the tones the cursor draws from.
+ */
+.pill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: inline-flex;
+  align-items: center;
+  height: calc(34 * var(--s));
+  padding-inline: calc(14 * var(--s));
+  border-radius: calc(54 * var(--s));
+  color: var(--color-pill-ink);
+  font-family: var(--font-mono);
+  font-weight: 300;
+  font-size: calc(12 * var(--s));
+  line-height: 1;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  /* Moved every frame, and by transform alone. */
+  will-change: transform;
+}

@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Monogram } from "@/components/Monogram";
 import { CursorPill } from "@/components/CursorPill";
 import { PillLink } from "@/components/PillLink";
+import { PillTrail } from "@/components/PillTrail";
 import { SectionLink } from "@/components/SectionLink";
 import { PortraitReveal } from "@/components/PortraitReveal";
 import { Stamps } from "@/components/Stamps";
@@ -16,6 +17,7 @@ import {
   aboutStatement,
   bookingUrl,
   disciplinePairs,
+  disciplines,
   site,
 } from "@/data/site";
 
@@ -25,6 +27,9 @@ import styles from "./about.module.css";
  * The fills the cursor pill draws from — the tones from globals.css, named here
  * in the order they are listed there.
  */
+/** What the pills the cursor drops are called: the work itself. */
+const SERVICES = disciplines.map((discipline) => discipline.name);
+
 const PILL_TONES = [
   "var(--color-tone-paper)",
   "var(--color-tone-lilac)",
@@ -179,6 +184,12 @@ export default function About() {
             {aboutInvitation}
           </span>
         </SectionLink>
+
+        {/*
+          And what the cursor leaves behind it: a pill for each thing the studio
+          does, dropped where the pointer went and left to fall.
+        */}
+        <PillTrail labels={SERVICES} tones={PILL_TONES} />
 
         {/*
           The cursor, while the pointer is in here: the pill the design draws,

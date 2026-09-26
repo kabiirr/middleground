@@ -2,10 +2,11 @@ import type { Metadata } from "next";
 
 import { CursorPill } from "@/components/CursorPill";
 import { Monogram } from "@/components/Monogram";
+import { PillTrail } from "@/components/PillTrail";
 import { SplitText } from "@/components/SplitText";
 import { Stamps } from "@/components/Stamps";
 import { Torch } from "@/components/Torch";
-import { bookingUrl, contactLinks, site } from "@/data/site";
+import { bookingUrl, contactLinks, disciplines, site } from "@/data/site";
 
 import styles from "./contact.module.css";
 
@@ -13,6 +14,9 @@ import styles from "./contact.module.css";
  * The fills the cursor pill draws from — the tones from globals.css, named here
  * in the order they are listed there.
  */
+/** What the pills the cursor drops are called: the work itself. */
+const SERVICES = disciplines.map((discipline) => discipline.name);
+
 const PILL_TONES = [
   "var(--color-tone-paper)",
   "var(--color-tone-lilac)",
@@ -81,6 +85,9 @@ export default function Contact() {
             delay={0.15}
           />
         </a>
+
+        {/* What the cursor leaves behind it, and what becomes of it. */}
+        <PillTrail labels={SERVICES} tones={PILL_TONES} />
 
         <CursorPill label="BOOK A CALL" />
       </Torch>
