@@ -100,11 +100,7 @@
     padding: max(12px, env(safe-area-inset-top))
       max(var(--gutter), env(safe-area-inset-right)) 12px
       max(var(--gutter), env(safe-area-inset-left));
-    /* Keeps the pills legible as content scrolls beneath them. */
-    background: linear-gradient(
-      to bottom,
-      var(--color-canvas) 60%,
-      transparent
-    );
   }
+
+  /* Its ground is the shared band — see [data-band] in globals.css. */
 }

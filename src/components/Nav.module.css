@@ -61,6 +61,12 @@
 .pill[data-active] {
   background-color: var(--color-pill-quiet);
   color: var(--color-pill-quiet-ink);
+  /*
+   * A tenth of white over whatever it is standing on, and that taken right
+   * down: the pill for the page you are already on reads as frosted rather
+   * than as a shape someone might press.
+   */
+  backdrop-filter: blur(14px);
 }
 
 @media (max-width: 1199px) {

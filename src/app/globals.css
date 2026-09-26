@@ -79,6 +79,13 @@
   --font-sans: "Articulat CF", ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-display: "Miller Display", ui-serif, Georgia, "Times New Roman", serif;
 
+  /*
+   * The band the way on stands in at the foot of a phone's screen. Named here
+   * because two things need the same figure: the strip itself, and the page
+   * under it, which has to end above rather than behind it.
+   */
+  --foot-band: calc(87px + env(safe-area-inset-bottom));
+
   /* Outer margin of the mosaic, 24px at the 1440px design width. */
   --gutter: 24px;
 
@@ -223,5 +230,55 @@ html.js [data-intro]:not([data-revealed]) {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/*
+ * A strip that holds still while the page runs under it — the navigation at
+ * the top, the way on at the foot — and the ground it needs to stay legible
+ * over the work.
+ *
+ * Two layers, each masked to ramp in where the other leaves off, so the blur
+ * is nothing at one edge of the strip and everything at the other. A single
+ * layer can only be on or off, and wherever it stops it leaves a line across
+ * the page. Two is also as far as it is worth taking: every layer is another
+ * pass over the pixels behind it.
+ *
+ * `--band` says which way it deepens; the ink beneath follows the same way.
+ * Only below the desktop breakpoint, where the strips exist at all.
+ */
+@media (max-width: 1199px) {
+  [data-band]::before,
+  [data-band]::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  [data-band]::before {
+    backdrop-filter: blur(2px);
+    mask-image: linear-gradient(var(--band, to top), transparent 0%, #000 65%);
+  }
+
+  [data-band]::after {
+    backdrop-filter: blur(4px);
+    mask-image: linear-gradient(var(--band, to top), transparent 50%, #000 100%);
+    /* A breath of black under it, for the pills to sit against. */
+    background-image: linear-gradient(
+      var(--band-ink, to bottom),
+      rgb(0 0 0 / 22%),
+      transparent
+    );
+  }
+
+  /*
+   * And whatever the strip carries, above both. ::after paints after the
+   * children it belongs to, so without this the heavier layer would lie over
+   * them and blur them along with the work behind.
+   */
+  [data-band] > * {
+    position: relative;
+    z-index: 1;
   }
 }

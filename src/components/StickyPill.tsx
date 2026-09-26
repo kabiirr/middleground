@@ -40,7 +40,7 @@ export function StickyPill({
   }, [watch]);
 
   return (
-    <div ref={held} className={className}>
+    <div ref={held} className={className} data-band="">
       {children}
     </div>
   );

@@ -104,7 +104,7 @@ export default function RootLayout({
               } as CSSProperties
             }
           >
-            <header className={styles.header}>
+            <header className={styles.header} data-band="">
               <SiteNav />
             </header>
             <main id="main">

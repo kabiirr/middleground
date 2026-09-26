@@ -18,7 +18,12 @@
   left: calc(50% - var(--centre) * var(--u) / 2);
   width: calc(var(--centre) * var(--u));
   z-index: 2;
-  pointer-events: none;
+  /*
+   * The column answers to the pointer, so that clicking anywhere in it leaves
+   * a mark. Nothing of the work stands behind it — the mosaic skips this column
+   * on the homepage — so there is nothing underneath left wanting the click.
+   */
+  pointer-events: auto;
 
   /*
    * The mark's size and where it sits, in design pixels. Both are stated here
@@ -49,9 +54,6 @@
 }
 
 /* Only the things themselves take the pointer, not the column around them. */
-.panel > * {
-  pointer-events: auto;
-}
 
 /*
  * The navigation leads the panel, sitting where it does on every other page —
@@ -153,29 +155,31 @@
     position: fixed;
     left: 0;
     right: 0;
-    bottom: max(20px, env(safe-area-inset-bottom));
+    bottom: 0;
     z-index: 3;
     display: flex;
+    align-items: flex-end;
     justify-content: center;
+    /*
+     * A band at the foot of the screen rather than a bar: it needs depth for
+     * the blur to come on gradually through it.
+     */
+    height: var(--foot-band);
+    padding-bottom: max(20px, env(safe-area-inset-bottom));
+    /* Its ground deepens towards the foot — see [data-band] in globals.css. */
+    --band: to bottom;
+    --band-ink: to top;
     /* It is a way on, not a lid over the work behind it. */
     pointer-events: none;
     opacity: 0;
-    translate: 0 16px;
+    translate: 0 20px;
     transition:
-      opacity 260ms ease,
-      translate 320ms cubic-bezier(0.22, 1, 0.36, 1);
+      opacity 420ms cubic-bezier(0.22, 1, 0.36, 1),
+      translate 560ms cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   .held > * {
     pointer-events: auto;
-    /*
-     * It stands over the work rather than on the page's own black, and some of
-     * that work is pale. The shadow is what keeps the pill an object above the
-     * grid instead of a shape cut into it.
-     */
-    box-shadow:
-      0 2px 8px rgb(0 0 0 / 14%),
-      0 12px 36px rgb(0 0 0 / 24%);
   }
 
   /*
@@ -192,7 +196,8 @@
    * page instead and scrolls with it.
    */
   .panel {
-    position: static;
+    /* Still the surface the marks are laid on, so still a frame for them. */
+    position: relative;
     display: flex;
     flex-direction: column;
     width: auto;
@@ -201,17 +206,44 @@
     padding: max(12px, env(safe-area-inset-top)) var(--gutter) 88px;
   }
 
+  /* The navigation is not in this list: it holds at the top, below. */
   .mark,
-  .tagline,
-  .nav {
+  .tagline {
     position: static;
     left: auto;
     right: auto;
     width: auto;
   }
 
+  /*
+   * The homepage carries its navigation inside the panel, and the panel
+   * travels with the page down here — so on its own the navigation would
+   * scroll away, where every other page keeps it. It comes out of the flow and
+   * holds at the top of the screen instead, on the same ground as the rest.
+   */
   .nav {
-    order: -1;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 4;
+    padding: max(12px, env(safe-area-inset-top))
+      max(var(--gutter), env(safe-area-inset-right)) 12px
+      max(var(--gutter), env(safe-area-inset-left));
+    transition:
+      translate 420ms cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 300ms ease;
+  }
+
+  /*
+   * Out of the way while the page is going down, and back the moment it turns
+   * round — see ShyBand. It leaves by the top edge it is fixed to, so it does
+   * not cross the work on its way out.
+   */
+  .nav[data-away] {
+    translate: 0 -100%;
+    opacity: 0;
+    pointer-events: none;
   }
 
   .mark {
@@ -242,8 +274,14 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .held {
-    transition: opacity 260ms ease;
+  /* They fade, without the movement. */
+  .held,
+  .nav {
+    transition: opacity 420ms cubic-bezier(0.22, 1, 0.36, 1);
+    translate: 0 0;
+  }
+
+  .nav[data-away] {
     translate: 0 0;
   }
 }

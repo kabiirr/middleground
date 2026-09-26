@@ -116,6 +116,14 @@
  */
 @media (max-width: 1199px) {
   /*
+   * Room under the last row for a way on that stands over the page rather than
+   * in it — without this the final captions sit behind its blur.
+   */
+  .clearFoot {
+    padding-bottom: var(--foot-band);
+  }
+
+  /*
    * The page stops at the end of the work rather than going round again. The
    * second pass is only there to make the desktop loop seamless, and a loop
    * wants a standing composition to wrap against — reflowed into a column that

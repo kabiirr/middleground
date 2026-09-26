@@ -2,7 +2,9 @@ import { Intro, MOSAIC_DELAY } from "@/components/Intro";
 import { Mosaic } from "@/components/Mosaic";
 import { Monogram } from "@/components/Monogram";
 import { Nav } from "@/components/Nav";
+import { ShyBand } from "@/components/ShyBand";
 import { PillLink } from "@/components/PillLink";
+import { Stamps } from "@/components/Stamps";
 import { StickyPill } from "@/components/StickyPill";
 import { bookingUrl, site } from "@/data/site";
 
@@ -19,9 +21,12 @@ export default function Home() {
       <Intro id="home" />
 
       <div className={styles.panel}>
-        <div className={styles.nav} data-intro="rest">
+        {/* The mark, stamped wherever the column is clicked. */}
+        <Stamps />
+
+        <ShyBand className={styles.nav} intro>
           <Nav minimal />
-        </div>
+        </ShyBand>
         <Monogram className={styles.mark} intro />
         <div className={styles.below}>
           <p className={styles.tagline} data-intro="rest">
@@ -37,6 +42,7 @@ export default function Home() {
         skipColumn={PANEL_COLUMN}
         identity={false}
         delay={MOSAIC_DELAY}
+        clearFoot
       />
 
       {/*

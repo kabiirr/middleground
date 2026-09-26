@@ -204,18 +204,23 @@ function Canvas({
 export function Mosaic({
   /** Leave this column clear, for a layout that puts something else there. */
   skipColumn,
+  /** End the grid above the strip a page keeps at the foot of the screen. */
+  clearFoot = false,
   /** Whether the mosaic carries the studio's name, fixed and roaming. */
   identity = true,
   /** Hold the tiles back, for a page that opens with something else first. */
   delay = 0,
 }: {
   skipColumn?: number;
+  clearFoot?: boolean;
   identity?: boolean;
   delay?: number;
 } = {}) {
   return (
     <ArtworkProvider>
-      <div className={styles.loop}>
+      <div
+        className={clearFoot ? `${styles.loop} ${styles.clearFoot}` : styles.loop}
+      >
         <MosaicMotion delay={delay} />
         <MosaicScroll />
         {identity ? <IdentityRelay /> : null}
