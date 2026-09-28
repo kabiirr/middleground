@@ -39,6 +39,14 @@
   max-width: min(100%, 1100px);
   /* The gap and the caption's line, so a tall piece still fits the screen. */
   max-height: calc(100svh - clamp(24px, 5vw, 72px) * 2 - 44px);
+  /*
+   * The image carries its own width and height now, so that the overlay holds
+   * the piece's shape before the file lands rather than snapping to it. Left
+   * at those figures it would ignore the two caps above, so both are handed
+   * back to the caps and the intrinsic ratio does the rest.
+   */
+  width: auto;
+  height: auto;
   object-fit: contain;
 }
 

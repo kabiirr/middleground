@@ -87,10 +87,12 @@ function MosaicTile({
   /** The duplicate pass is scenery; only the first pass answers to anything. */
   interactive: boolean;
 }) {
+  // The artwork's own proportions: the tile, less the band its title stands in.
+  const ratio = tile.rect.width / (tile.rect.height - TITLE_BAND);
+
   const style = {
     ...toStyle(tile.rect, tile.place),
-    // The artwork's own proportions, which is the tile less the band its title
-    // stands in. Used where the tiles flow rather than being placed.
+    // The same figure, for where the tiles flow rather than being placed.
     "--tile-ratio": `${tile.rect.width} / ${tile.rect.height - TITLE_BAND}`,
     // And how much of the tile is artwork, which is the part that grows.
     "--art": tile.rect.height - TITLE_BAND,
@@ -132,7 +134,7 @@ function MosaicTile({
           {inside}
         </Link>
       ) : interactive && tile.media ? (
-        <ArtworkTrigger tile={tile} className={styles.link}>
+        <ArtworkTrigger tile={{ ...tile, ratio }} className={styles.link}>
           {inside}
         </ArtworkTrigger>
       ) : (

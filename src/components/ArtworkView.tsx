@@ -10,13 +10,37 @@ import {
   type ReactNode,
 } from "react";
 
+import Image from "next/image";
+
 import { scroller } from "@/lib/motion";
 import type { Tile } from "@/data/projects";
 
 import styles from "./ArtworkView.module.css";
 
-/** What a tile hands over when it is opened. */
-type Shown = Pick<Tile, "media" | "alt" | "title" | "note">;
+/**
+ * What a tile hands over when it is opened.
+ *
+ * The ratio travels with it because the overlay has to reserve the piece's
+ * shape before the file arrives — otherwise the caption jumps down the screen
+ * as each image lands. The tile already works it out for its own frame; this
+ * is the same figure, not a second measurement.
+ */
+type Shown = Pick<Tile, "media" | "alt" | "title" | "note"> & {
+  ratio?: number;
+};
+
+/**
+ * The long edge the overlay asks for, in CSS pixels.
+ *
+ * `.media` caps the artwork at 1100px wide, so this is that at 2x and no more
+ * — enough for a retina screen, and nowhere near the 2160px the sources
+ * actually are. Before this the overlay served the original file whole: 1.7MB
+ * of JPEG to show something that is never painted above 1100px.
+ */
+const LONG_EDGE = 2200;
+
+/** What the browser is told it will be given, so it picks the right width. */
+const SIZES = "(max-width: 1100px) 100vw, 1100px";
 
 const ArtworkContext = createContext<((tile: Shown) => void) | null>(null);
 
@@ -110,12 +134,26 @@ export function ArtworkProvider({ children }: { children: ReactNode }) {
                 playsInline
               />
             ) : shown.media ? (
-              /* Full size and one at a time: nothing for next/image to weigh up. */
-              /* eslint-disable-next-line @next/next/no-img-element */
-              <img
+              /*
+               * Sized rather than whole. The piece is shown uncropped, but
+               * "uncropped" is about the framing, not about shipping the
+               * print file — the overlay never paints above 1100px, so it
+               * asks for that and gets AVIF instead of the original JPEG.
+               */
+              <Image
                 className={styles.media}
                 src={shown.media.src}
                 alt={shown.alt ?? ""}
+                width={LONG_EDGE}
+                height={Math.round(LONG_EDGE / (shown.ratio ?? 1))}
+                sizes={SIZES}
+                /*
+                 * The overlay only exists once it has been opened, so the
+                 * piece is already on screen and there is nothing to wait to
+                 * find out. Left lazy it would hold the visitor at a blank
+                 * frame while the browser confirmed what it could already see.
+                 */
+                loading="eager"
               />
             ) : null}
 
