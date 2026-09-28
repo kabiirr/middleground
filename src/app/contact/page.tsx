@@ -6,7 +6,15 @@ import { PillTrail } from "@/components/PillTrail";
 import { SplitText } from "@/components/SplitText";
 import { Stamps } from "@/components/Stamps";
 import { Torch } from "@/components/Torch";
-import { bookingUrl, contactLinks, disciplines, site } from "@/data/site";
+import {
+  bookingUrl,
+  contactLinks,
+  disciplines,
+  founder,
+  site,
+  socialProfiles,
+} from "@/data/site";
+import { JsonLd, ORGANISATION, pageMetadata, pageSchema } from "@/lib/seo";
 
 import styles from "./contact.module.css";
 
@@ -29,17 +37,72 @@ const PILL_TONES = [
 
 
 
-export const metadata: Metadata = {
-  title: "Contact",
-  description: `Get in touch with ${site.name}.`,
+export const metadata: Metadata = pageMetadata({
+  path: "/contact",
+  title: "Contact the Studio",
+  /*
+   * "Get in touch with MiddleGround" says nothing a result list can act on.
+   * What someone searching for a studio wants to know is that there is a way
+   * in and what it costs them — a call, an email, a reply — so the description
+   * is the invitation rather than a label for the page.
+   */
+  description: `Start a brand project with ${site.name}. Book a call with ${founder.name}, or reach the studio by email — new work, collaborations and speaking all welcome.`,
+});
+
+/**
+ * How to reach the studio, said in the markup as well as on the page.
+ *
+ * The `contactPoint` is the part that travels: it is what a knowledge panel
+ * shows, and what an assistant quotes when someone asks how to get hold of
+ * MiddleGround, without either having to guess which of the five lines on the
+ * page is the address.
+ */
+const schema = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      ...pageSchema({
+        type: "ContactPage",
+        path: "/contact",
+        name: `Contact ${site.name}`,
+        description: `Book a call with ${founder.name} or email the studio.`,
+      }),
+      mainEntity: { "@id": ORGANISATION },
+    },
+    {
+      "@type": "Organization",
+      "@id": ORGANISATION,
+      email: site.email,
+      sameAs: socialProfiles,
+      contactPoint: {
+        "@type": "ContactPoint",
+        contactType: "New business",
+        email: site.email,
+        url: bookingUrl,
+        availableLanguage: "English",
+      },
+    },
+  ],
 };
 
 export default function Contact() {
   return (
     <div className={styles.screen}>
+      <JsonLd schema={schema} />
+
+      {/*
+        The page's heading, read rather than seen. "Reach out" is the headline
+        the design draws and it is the right words on the page, but it names
+        neither the studio nor what the page is for — which is all a result
+        list has to go on.
+      */}
+      <h1 className="visually-hidden">Contact {site.name}</h1>
+
       <Stamps />
 
       <Monogram className={styles.monogram} />
+
+      <h2 className="visually-hidden">Where to find {site.name}</h2>
 
       <ul className={styles.details} data-reveal="">
         {contactLinks.map((link) => (
@@ -79,7 +142,7 @@ export default function Contact() {
           data-part=""
         >
           <SplitText
-            as="h1"
+            as="h2"
             className={styles.headline}
             text="Reach out"
             delay={0.15}

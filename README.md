@@ -106,10 +106,10 @@ without it.
 A tile is a piece and its caption together, and it is tiles the 16px is measured
 between: the caption travels with the work it names rather than floating in the
 space between two of them. Under the artwork stands the project's name at 14px
-and, beneath that, what the work was and when at 11px — both in the sans, since
+and, beneath that, what the work was and when at 14px — both in the sans, since
 the display face signs the page and not the work. Those are pixels, not design
 units: a caption is text at a size someone chose, the same on a laptop as on a
-wall. So the band holding them is `8 + (14 + 11) × 1.2 = 38px` and holds too,
+wall. So the band holding them is `8 + (14 + 14) × 1.2 = 41.6px` and holds too,
 and the band is exactly its contents — anything spare inside it would show up
 under the caption as space the gutter appears to gain.
 
@@ -132,8 +132,9 @@ it has to get right:
 The 16px is the same in both directions and stays that way while the page
 moves, because the columns ride as whole blocks rather than tile by tile.
 
-Each tile carries a `data-node-id` matching its Figma node, so any tile on the
-page can be traced back to the design.
+`Tile` carries an optional `node` for the Figma node it came from, rendered as
+`data-node-id`. Nothing sets it at present — the artwork helpers do not pass
+one — so the attribute is absent in practice.
 
 ## The alternate homepage
 
@@ -620,20 +621,33 @@ Tiles take either a still or a silent looping clip:
   href: "/work/artemis" }  // optional case study link
 ```
 
-Both are cropped with `object-fit: cover`, so any aspect ratio works — though
-artwork close to the tile's own proportions loses least at the edges. Stills go
-through `next/image` (a 1.4MB source is served at roughly 47KB). Clips play only
-while on screen and never when `prefers-reduced-motion` is set; they have no
-poster frames, so the first frame stands in.
+**A piece's `ratio` is load-bearing, and it is not free.** It has to be the
+file's own proportions, written as the fraction of its true pixel dimensions —
+it is what gives the tile its height, so a wrong figure crops the artwork at
+the edges under `object-fit: cover`. More than that, the five columns have to
+finish level (see above), and a ratio is what a column's depth is made of. The
+four columns of work each carry five pieces at 4:5 and two square, and that is
+not a stylistic choice — change one and the grid goes out of step. The check in
+`projects.ts` throws when it does, in every build including production, so this
+fails loudly rather than shipping as a gap at the loop's join.
+
+Stills go through `next/image` (a 1.4MB source is served at roughly 47KB).
+Clips play only while on screen and never when `prefers-reduced-motion` is set;
+`TileMedia` has a `poster` field but `clip()` sets none, so the first frame
+stands in.
 
 All thirty-four tiles are filled, across eight projects — Artemis, Outsmarted My
 Molars, Glass Banking, DABA, MO.FOOD, woka, Tech for the World Forum and Nomadi
 — plus five silent clips. Projects are interleaved rather than grouped so the
-grid mixes as you scroll; reorder by moving entries in `ARTWORK`, which applies
-to the tiles in reading order.
+grid mixes as you scroll; reorder by moving entries within a column stack in
+`COLUMN_ART`, which is five column arrays rather than one list in reading
+order. Moving a piece *between* columns changes what each column carries, so
+the shapes have to still come out even.
 
 There are thirty-five pieces for thirty-four tiles, so `artemis-12.jpg` is held
-back — Artemis is the largest set. Swap it in for any entry in `ARTWORK`.
+back — Artemis is the largest set. Swap it in for any other Artemis frame,
+which is the one substitution that cannot unbalance anything: same project,
+same ratio, same alt text.
 
 ### Worth confirming
 
@@ -646,6 +660,25 @@ back — Artemis is the largest set. Swap it in for any entry in `ARTWORK`.
 - **`motion-04.mp4` is 3.9MB**, far larger than the other clips. It is only
   fetched when it scrolls into view, so it does not weigh on first load, but it
   is worth re-encoding.
+
+## Checks
+
+```bash
+npm run typecheck    # tsc --noEmit
+npm run lint         # eslint — next build no longer runs it
+npm run grid:check   # the mosaic still stands where the fixture says
+npm run build        # the grid assertions run here too
+```
+
+All four run in CI on every push and pull request
+(`.github/workflows/ci.yml`), and want to be a required check on `main`.
+
+`npm run grid:check` compares the mosaic's geometry against
+`src/data/__fixtures__/grid.json` — every tile's position, the column metrics,
+the identity block's height, and the project list the structured data is built
+from. A change there is not necessarily wrong, but it has to be deliberate:
+re-freeze with `npm run grid:freeze` and commit the fixture alongside the
+change, so the diff shows exactly what moved on the wall.
 
 ## Type
 
@@ -661,6 +694,10 @@ The originals were converted to `.woff2` into `public/fonts`; the `@font-face`
 rules are at the top of `src/app/globals.css`. All three are preloaded in
 `src/app/layout.tsx`, since each is above the fold on one page or another.
 
+Two of them exist a second time as `.ttf`, in `src/assets/fonts`, for the share
+card alone — satori, which draws it, cannot read woff2. They are never served
+to a browser: the card is rendered at build time and only the PNG goes out.
+
 To add a weight, convert it alongside the others:
 
 ```bash
@@ -670,3 +707,112 @@ f = TTFont('ArticulatCF-Bold.otf'); f.flavor = 'woff2'
 f.save('public/fonts/ArticulatCF-Bold.woff2')"
 ```
 
+## Search
+
+Everything the site says about itself to something that is not a person: a
+crawler, a share-card scraper, an assistant answering a question about brand
+studios. It is all static — the whole site prerenders, including the sitemap,
+the robots file and the share card — so none of it costs a request.
+
+### One address
+
+`siteUrl` in `src/data/site.ts` is the single origin, and `absoluteUrl()` is
+how anything builds a URL from it. It is `https://middleground.design` unless
+`NEXT_PUBLIC_SITE_URL` says otherwise, which a preview deployment can.
+
+That one value settles the canonical link on every page, `metadataBase` in the
+root layout, the sitemap, the share image, and the `@id` every piece of
+structured data hangs off. Change it in one place and the site moves.
+
+Two things still have to be true at the domain, and no amount of code can make
+them so: `www` must redirect to the apex (or the other way round, but pick
+one), and `http` must redirect to `https`. Both are Vercel domain settings.
+
+### Titles and descriptions
+
+The root layout holds the defaults and the template, which puts the page's own
+name first and the studio's after it — a result list truncates from the right.
+
+Each page adds its own through `pageMetadata()` in `src/lib/seo.tsx`, which
+exists for one reason: `openGraph` does not merge. A page that sets so much as
+its own `og:url` replaces the whole object it inherited, and `og:site_name` and
+`og:type` quietly vanish from that page. The helper restates them.
+
+Descriptions are written for a stranger reading one line in a list of ten, not
+as a summary of the page. That is why the about page's description is not the
+statement it opens with: "We are MiddleGround" reads as a second paragraph.
+
+### The alternate homepage
+
+`/alt` shows the same work as `/` in a different arrangement, which is exactly
+the kind of page that splits a site against itself. It carries a canonical to
+`/`, asks not to be indexed, is disallowed in `robots.txt`, and is absent from
+the sitemap. It still works for anyone who has the address.
+
+### Structured data
+
+`src/lib/seo.tsx` holds it. One graph in the root layout describes the studio,
+its founder and the site; each page adds a node for what that page is, and
+refers back by `@id` rather than repeating anything.
+
+| Page | Adds |
+| --- | --- |
+| `/` | `CollectionPage`, and an `ItemList` of the work — each project once, with its discipline and year |
+| `/about` | `AboutPage`, and the `Person` the second half of it is about |
+| `/contact` | `ContactPage`, and the studio's `contactPoint` |
+
+The work list is derived from the mosaic (`projectIndex` in
+`src/data/projects.ts`), not written out again: a project added to the grid is
+a project the markup already knows about. The mosaic shows a project several
+times over, which is right on the page and wrong here, so the index takes each
+title once with its first frame.
+
+`sameAs` on the organisation is what joins this domain to the studio's accounts
+elsewhere. Without it they are four separate MiddleGrounds as far as anything
+reading the web is concerned. Keep it in step with `contactLinks`.
+
+Check any change to it against
+[the Rich Results Test](https://search.google.com/test/rich-results) and
+[schema.org's validator](https://validator.schema.org/).
+
+### The share card
+
+`src/app/opengraph-image.tsx` draws the 1200 × 630 card every link to the site
+unfurls into, and `twitter-image.tsx` re-exports it for the one platform that
+reads its own tag. It is the studio's own type — the wordmark is the site's SVG
+and the line beneath it Miller Display — because a brand studio whose link
+previews come out in a fallback sans is arguing against itself.
+
+The paths to the four files it is made of are spelled out in full rather than
+built by a helper. The bundler reads them statically; one it cannot read makes
+it give up and trace the entire project into the server bundle, `public/` and
+all.
+
+A page that wants its own card puts an `opengraph-image` in its own folder, and
+the nearer file wins. A case study should.
+
+### Crawlers
+
+`robots.ts` lets everything in, assistants included. A studio that wants to be
+named when someone asks an assistant who does good identity work has to be
+readable by the thing being asked, and there is nothing here to protect.
+
+`max-image-preview: large` in the root layout is worth more than it looks: it
+is the difference between this site appearing in results as a thumbnail and
+appearing as the work.
+
+The sitemap lists the artwork as well as the pages. Image search is where a
+fair number of people looking for a brand designer actually look.
+
+### What is still missing
+
+The one thing with more upside than everything above, and the one thing that
+cannot be built without the studio writing it: case studies. Nine projects are
+shown and none of them has a page. A page each at `/work/<project>` — the
+problem, the thinking, the work, the outcome — is what lets the site be found
+for "brand identity for a fintech" rather than only for its own name. `Tile`
+already carries an `href` for exactly this.
+
+Two smaller ones: set `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` and claim the site
+in Search Console, and correct the years in `src/data/projects.ts`, which are
+placeholders and now travel in the structured data as `dateCreated`.

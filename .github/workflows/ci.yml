@@ -1,0 +1,47 @@
+# Checks that have to pass before anything reaches main.
+#
+# There were none before this. Next 16 stopped running ESLint as part of
+# `next build`, so nothing in the project checked anything at any point — and
+# the grid assertions that guard the mosaic were held behind a development-only
+# flag, which meant a change that unbalanced the wall built and deployed clean.
+#
+# Both of those are the reason this file exists. Make it a required check on
+# main: the whole point is that a bad change cannot be merged, not that someone
+# notices a red tick afterwards.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      # Types first: it is the fastest of the four and catches the most.
+      - name: Types
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      # The mosaic's geometry, against the fixture it was frozen at. A change
+      # here is not necessarily wrong — but it has to be deliberate, and the
+      # fixture has to be re-frozen in the same commit so the diff shows it.
+      - name: Mosaic geometry
+        run: npm run grid:check
+
+      # Last, and the real gate: the grid assertions in src/data/projects.ts
+      # run during prerender, so an unbalanced wall fails here.
+      - name: Build
+        run: npm run build

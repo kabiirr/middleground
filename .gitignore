@@ -43,3 +43,8 @@ next-env.d.ts
 # Screen recordings kept alongside the project, not part of the site.
 /Microsoft Edge.mp4
 /Microsoft Edge2.mp4
+
+# Local agent tooling, not part of the site.
+/.agents
+/.claude
+/skills-lock.json

@@ -2,6 +2,58 @@ export const site = {
   name: "MiddleGround",
   tagline:
     "MiddleGround is a brand design studio building brands that make a meaningful mark in the world.",
+  /**
+   * What the studio is, said once, for the places that ask for a sentence
+   * rather than a page: the description meta tag, the share cards, and the
+   * structured data underneath both.
+   *
+   * It is not the tagline. The tagline is what the studio says about itself on
+   * the page; this has to survive being read out of context, in a list of ten
+   * other results, by someone who has never heard of us — so it names the work
+   * as well as the belief.
+   */
+  description:
+    "MiddleGround is a brand design studio working across strategy, identity, packaging and digital — building brands that make a meaningful mark in the world.",
+  /** The email the studio answers on, which is also the one in the markup. */
+  email: "hello@middleground.design",
+};
+
+/**
+ * Where the site lives, and the one origin every absolute URL is built from —
+ * canonical links, share images, the sitemap, and the `@id` that ties every
+ * piece of structured data to the same organisation.
+ *
+ * A preview deployment can point this elsewhere with NEXT_PUBLIC_SITE_URL, but
+ * the default is production on purpose: a canonical that quietly resolves to a
+ * preview hostname is how a staging copy ends up in the index instead of the
+ * real one.
+ */
+export const siteUrl = (
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://middleground.design"
+).replace(/\/$/, "");
+
+/** An absolute URL for a path on this site, for the places that require one. */
+export const absoluteUrl = (path: string) =>
+  new URL(path, `${siteUrl}/`).toString();
+
+/**
+ * The studio's profiles elsewhere, in the order they are claimed.
+ *
+ * These are what `sameAs` carries in the structured data: the way a search
+ * engine — or anything answering a question with a citation — joins this site
+ * to the accounts posting the same work under the same name, and treats the
+ * three of them as one entity rather than three strangers.
+ */
+export const socialProfiles = [
+  "https://www.instagram.com/by_middleground",
+  "https://x.com/bymiddleground",
+  "https://www.linkedin.com/company/bymiddleground/",
+];
+
+/** Who the studio is, named where the markup asks for a person. */
+export const founder = {
+  name: "Abel Idume",
+  role: "Brand Designer and Creative Director",
 };
 
 /** The homepage, which carries its own navigation inside the fixed panel. */

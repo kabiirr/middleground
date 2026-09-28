@@ -336,13 +336,33 @@ function stack(column: number, pieces: Art[]): Tile[] {
 const COLUMN_TILES = COLUMN_ART.map((pieces, column) => stack(column, pieces));
 
 /**
+ * The least air the identity block may be left with, and the most it may be
+ * given. Below the floor the logotype and the tagline crowd each other; above
+ * the ceiling the block stops reading as a panel and starts reading as a hole
+ * in the middle of the wall.
+ *
+ * The floor is the figure the check has always used. The ceiling is a
+ * judgement — a 4:5 tile in a work column stands 360px including its band, and
+ * a block much taller than that is no longer part of the same grid.
+ */
+const IDENTITY_AIR = { least: 120, most: 360 } as const;
+
+/**
  * The balance the grid rests on, checked rather than trusted.
  *
  * A column out of step is not a crash and not a type error — it is a wide gap
  * at the loop's join that only shows up on the page, so it is caught here
  * instead, while the work is being changed.
+ *
+ * This runs in every build, production included. It used to be held behind a
+ * development-only guard, on the reasoning that a throw in a running server is
+ * worse than a crooked grid — but the grid is settled at build time, not at
+ * request time, and a build that throws is exactly what is wanted: Vercel
+ * keeps the deployment that is already live. Behind the guard it was dead code
+ * in `next build`, which meant work that unbalanced the mosaic shipped clean
+ * and showed up as a gap at the seam for a visitor to find.
  */
-if (process.env.NODE_ENV !== "production") {
+{
   const feet = COLUMN_TILES.map((column) => {
     const last = column[column.length - 1];
     return {
@@ -369,11 +389,23 @@ if (process.env.NODE_ENV !== "production") {
     );
   }
 
-  if (IDENTITY_HEIGHT + TITLE_BAND < IDENTITY_CONTENT_HEIGHT + 120) {
+  const air = IDENTITY_HEIGHT + TITLE_BAND - IDENTITY_CONTENT_HEIGHT;
+
+  if (air < IDENTITY_AIR.least) {
     throw new Error(
       `The identity block is down to ${IDENTITY_HEIGHT.toFixed(1)}px, ` +
         "which leaves too little air between the logotype and the tagline. " +
         "The middle column is carrying too much — see COLUMN_ART.",
+    );
+  }
+
+  if (air > IDENTITY_AIR.most) {
+    throw new Error(
+      `The identity block is up to ${IDENTITY_HEIGHT.toFixed(1)}px, which is ` +
+        "more space than the studio's name has anything to do with — it will " +
+        "read as a hole in the middle of the mosaic rather than as a panel " +
+        "in it. The middle column is carrying too little against the other " +
+        "four — see COLUMN_ART.",
     );
   }
 }
@@ -381,6 +413,52 @@ if (process.env.NODE_ENV !== "production") {
 /** Every tile, ordered by row then column. */
 export const tiles: Tile[] = COLUMN_TILES.flat().sort(
   (a, b) => a.rect.y - b.rect.y || a.rect.x - b.rect.x,
+);
+
+/**
+ * The work as a list of projects rather than a wall of tiles.
+ *
+ * The mosaic shows a project several times over — four frames of Artemis, four
+ * of woka — which is right on the page and wrong everywhere else. Anything
+ * being told what the studio has made wants each project once, with the first
+ * frame of it as the image and the line under it read apart into what the work
+ * was and when.
+ *
+ * Derived from the tiles rather than written out again, so a project added to
+ * the grid is a project the structured data already knows about.
+ */
+export type ProjectEntry = {
+  title: string;
+  /** What the work was — the first half of the tile's note. */
+  discipline: string;
+  /** And when, where the note gives a year. */
+  year?: string;
+  /** The first frame of it shown on the page. */
+  image?: string;
+  /** What that frame shows. */
+  alt?: string;
+};
+
+export const projectIndex: ProjectEntry[] = tiles.reduce<ProjectEntry[]>(
+  (found, tile) => {
+    if (!tile.title || found.some((entry) => entry.title === tile.title)) {
+      return found;
+    }
+
+    /* "Brand Identity, 2026" — the discipline, then the year. */
+    const [discipline, year] = (tile.note ?? "").split(",").map((part) => part.trim());
+
+    found.push({
+      title: tile.title,
+      discipline: discipline || "Brand Design",
+      year: year || undefined,
+      image: tile.media?.kind === "image" ? tile.media.src : undefined,
+      alt: tile.alt,
+    });
+
+    return found;
+  },
+  [],
 );
 
 /**

@@ -15,11 +15,20 @@ import {
   aboutInvitation,
   aboutLead,
   aboutStatement,
+  absoluteUrl,
   bookingUrl,
   disciplinePairs,
   disciplines,
+  founder,
   site,
 } from "@/data/site";
+import {
+  FOUNDER,
+  JsonLd,
+  ORGANISATION,
+  pageMetadata,
+  pageSchema,
+} from "@/lib/seo";
 
 import styles from "./about.module.css";
 
@@ -40,15 +49,61 @@ const PILL_TONES = [
   "var(--color-tone-blossom)",
 ];
 
-export const metadata: Metadata = {
-  title: "About",
-  description: aboutStatement,
+export const metadata: Metadata = pageMetadata({
+  path: "/about",
+  /*
+   * What the page is comes first: a result list truncates from the right, and
+   * the template puts the studio's name on the end anyway.
+   */
+  title: "About the Studio",
+  /*
+   * Not the statement on the page. That opens with "We are MiddleGround" and
+   * reads as the second paragraph of something — which is fine on the page and
+   * useless in a list of results, where nothing has been said yet.
+   */
+  description: `${site.name} is a brand design studio led by ${founder.name}, working across strategy, brand identity, packaging, motion and digital for founders and teams at defining moments.`,
+});
+
+/**
+ * The page, and the person the second half of it is about.
+ *
+ * A studio of one name is an entity worth stating plainly: the work is
+ * commissioned on the strength of who does it, and "who is Abel Idume" is a
+ * question asked of search engines and assistants alike. Tying the Person to
+ * the Organization, and both to the disciplines, is what lets either be
+ * answered with the other.
+ */
+const schema = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      ...pageSchema({
+        type: "AboutPage",
+        path: "/about",
+        name: `About ${site.name}`,
+        description: aboutStatement,
+      }),
+      mainEntity: { "@id": ORGANISATION },
+    },
+    {
+      "@type": "Person",
+      "@id": FOUNDER,
+      name: founder.name,
+      jobTitle: founder.role,
+      description: aboutLead,
+      image: absoluteUrl("/images/abel-portrait.jpg"),
+      worksFor: { "@id": ORGANISATION },
+      knowsAbout: disciplines.map((discipline) => discipline.name),
+    },
+  ],
 };
 
 export default function About() {
   return (
     <div className={styles.screen}>
-      <h1 className="visually-hidden">About {site.name}</h1>
+      <JsonLd schema={schema} />
+
+      <h1 className="visually-hidden">About {site.name}, a brand design studio</h1>
 
       <Stamps />
 
@@ -63,6 +118,8 @@ export default function About() {
           <p key={column}>{column}</p>
         ))}
       </div>
+
+      <h2 className="visually-hidden">What we do</h2>
 
       {/*
         One run of type rather than a list of rows: letting it wrap keeps the
@@ -135,6 +192,8 @@ export default function About() {
       </Torch>
 
       <section className={styles.director}>
+        <h2 className="visually-hidden">Who leads the work</h2>
+
         <span className={styles.rule} aria-hidden="true" />
 
         <PortraitReveal className={styles.portrait}>
