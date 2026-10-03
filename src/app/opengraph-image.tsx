@@ -9,14 +9,11 @@ import { site } from "@/data/site";
  * The card every link to this site unfurls into — in a message, a post, a
  * search result's preview, an assistant's citation.
  *
- * It is drawn rather than photographed because the studio's own type is the
- * point: a brand studio whose link previews are a screenshot and a fallback
- * sans is making an argument against itself. The wordmark is the site's own
- * SVG, and the line beneath it the same Miller Display italic the pages set.
- *
- * One image serves the whole site. A page that wants its own — a case study,
- * showing the work — puts an `opengraph-image` in its own folder, and the
- * nearer file wins.
+ * It is the studio's own artwork rather than anything composed here. What this
+ * file does is fit it to the frame: the supplied card is 5760 × 3400, and
+ * every platform that reads an og:image wants 1200 × 630. Handing over the
+ * original would leave each of them to crop it however they saw fit, at eleven
+ * times the pixels anyone will look at.
  */
 export const alt = `${site.name} — brand design studio`;
 
@@ -25,41 +22,28 @@ export const size = { width: 1200, height: 630 };
 
 export const contentType = "image/png";
 
-/** Straight from globals.css: the canvas, the off-white, and the grey. */
-const CANVAS = "#000000";
-const BONE = "#efefe9";
-const MUTED = "#787875";
-
 /*
- * The four files this card is made of, each named in full.
- *
- * Spelled out rather than built by a helper on purpose: the bundler reads
- * these paths statically to work out what to ship, and a path it cannot read
- * makes it give up and trace the entire project into the server bundle —
- * every source file and every image in public/ along with it.
+ * Named in full rather than built by a helper: the bundler reads this path
+ * statically to work out what to ship, and one it cannot read makes it give up
+ * and trace the entire project into the server bundle, public/ and all.
  */
-const WORDMARK = join(process.cwd(), "public", "logo.svg");
-const MONOGRAM = join(process.cwd(), "public", "monogram.svg");
-const DISPLAY_FONT = join(
-  process.cwd(),
-  "src/assets/fonts/MillerDisplay-Italic.ttf",
-);
-const LABEL_FONT = join(
-  process.cwd(),
-  "src/assets/fonts/ArticulatCF-Medium.ttf",
-);
+const CARD = join(process.cwd(), "public/images/og image.png");
 
-/** An SVG read off disk as something satori will draw: a data URI. */
-const inlineSvg = (svg: string) =>
-  `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
+/** The canvas, straight from globals.css — and the card's own background. */
+const CANVAS = "#000000";
+
+/**
+ * The supplied card is 1.694:1 against the frame's 1.905:1, so something has to
+ * give. It is cropped rather than lettered-boxed: the wordmark sits in the
+ * middle fifth of a very tall black field, so taking 11% off the height costs
+ * nothing and leaves the type as large as the frame allows. The bars either way
+ * would have been black on black and invisible — but smaller.
+ */
+const SCALED = { width: 1200, height: 708 };
 
 export default async function Image() {
-  const [wordmark, monogram, display, label] = await Promise.all([
-    readFile(WORDMARK, "utf8").then(inlineSvg),
-    readFile(MONOGRAM, "utf8").then(inlineSvg),
-    readFile(DISPLAY_FONT),
-    readFile(LABEL_FONT),
-  ]);
+  const card = await readFile(CARD);
+  const src = `data:image/png;base64,${card.toString("base64")}`;
 
   return new ImageResponse(
     (
@@ -68,57 +52,15 @@ export default async function Image() {
           width: "100%",
           height: "100%",
           display: "flex",
-          flexDirection: "column",
-          justifyContent: "space-between",
+          alignItems: "center",
+          justifyContent: "center",
+          overflow: "hidden",
           background: CANVAS,
-          padding: "64px 80px 68px",
         }}
       >
-        <img src={monogram} alt="" width={84} height={84} />
-
-        <div style={{ display: "flex", flexDirection: "column", gap: 34 }}>
-          {/* The name, as the site draws it rather than as type set again. */}
-          <img src={wordmark} alt="" width={340} height={181} />
-
-          <div
-            style={{
-              display: "flex",
-              fontFamily: "Miller Display",
-              fontStyle: "italic",
-              fontSize: 38,
-              lineHeight: 1.3,
-              color: BONE,
-              maxWidth: 900,
-            }}
-          >
-            {site.tagline}
-          </div>
-        </div>
-
-        <div
-          style={{
-            display: "flex",
-            fontFamily: "Articulat CF",
-            fontSize: 20,
-            letterSpacing: 4,
-            color: MUTED,
-          }}
-        >
-          BRAND IDENTITY / STRATEGY / PACKAGING / WEBSITES
-        </div>
+        <img src={src} alt="" width={SCALED.width} height={SCALED.height} />
       </div>
     ),
-    {
-      ...size,
-      fonts: [
-        {
-          name: "Miller Display",
-          data: display,
-          style: "italic",
-          weight: 400,
-        },
-        { name: "Articulat CF", data: label, style: "normal", weight: 500 },
-      ],
-    },
+    size,
   );
 }

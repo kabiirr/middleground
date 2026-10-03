@@ -694,9 +694,6 @@ The originals were converted to `.woff2` into `public/fonts`; the `@font-face`
 rules are at the top of `src/app/globals.css`. All three are preloaded in
 `src/app/layout.tsx`, since each is above the fold on one page or another.
 
-Two of them exist a second time as `.ttf`, in `src/assets/fonts`, for the share
-card alone — satori, which draws it, cannot read woff2. They are never served
-to a browser: the card is rendered at build time and only the PNG goes out.
 
 To add a weight, convert it alongside the others:
 
@@ -777,16 +774,21 @@ Check any change to it against
 
 ### The share card
 
-`src/app/opengraph-image.tsx` draws the 1200 × 630 card every link to the site
+`src/app/opengraph-image.tsx` serves the 1200 × 630 card every link to the site
 unfurls into, and `twitter-image.tsx` re-exports it for the one platform that
-reads its own tag. It is the studio's own type — the wordmark is the site's SVG
-and the line beneath it Miller Display — because a brand studio whose link
-previews come out in a fallback sans is arguing against itself.
+reads its own tag.
 
-The paths to the four files it is made of are spelled out in full rather than
-built by a helper. The bundler reads them statically; one it cannot read makes
-it give up and trace the entire project into the server bundle, `public/` and
-all.
+The artwork is the studio's own, `public/images/og image.png`. All the route
+does is fit it to the frame: the supplied card is 5760 × 3400, and every
+platform that reads an `og:image` wants 1200 × 630. Handing over the original
+would leave each of them to crop it however they saw fit, at eleven times the
+pixels anyone will look at. It is cropped rather than letterboxed — the
+wordmark sits in the middle fifth of a tall black field, so losing 11% of the
+height costs nothing and keeps the type as large as the frame allows.
+
+The path to it is spelled out in full rather than built by a helper. The
+bundler reads it statically; one it cannot read makes it give up and trace the
+entire project into the server bundle, `public/` and all.
 
 A page that wants its own card puts an `opengraph-image` in its own folder, and
 the nearer file wins. A case study should.
