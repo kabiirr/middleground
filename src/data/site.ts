@@ -27,9 +27,21 @@ export const site = {
  * the default is production on purpose: a canonical that quietly resolves to a
  * preview hostname is how a staging copy ends up in the index instead of the
  * real one.
+ *
+ * It is the www host, and that is not cosmetic. Both are registered with the
+ * deployment, but only www has DNS pointing at it — the bare domain still
+ * answers with the registrar's parking address and nothing is listening on
+ * 443, so https to it times out rather than redirecting. Every absolute URL
+ * on the site is built from this one value, so while it named the bare domain
+ * the share card, the canonicals, the sitemap and the structured data were all
+ * pointing somewhere no crawler could reach.
+ *
+ * Move it back to the bare domain once that resolves — a canonical pointing at
+ * a host that does not exist is worse than no canonical at all, and the same
+ * is true in reverse: this should name whichever host actually serves.
  */
 export const siteUrl = (
-  process.env.NEXT_PUBLIC_SITE_URL ?? "https://middleground.design"
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.middleground.design"
 ).replace(/\/$/, "");
 
 /** An absolute URL for a path on this site, for the places that require one. */
