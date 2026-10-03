@@ -132,7 +132,7 @@ export const disciplinePairs: Discipline[][] = disciplines.reduce<
 }, []);
 
 /** Where a call is booked, which is what the disciplines lead to. */
-export const bookingUrl = "https://calendly.com/abelidume/meet-with-abel";
+export const bookingUrl = "https://calendly.com/abelidume/project-inquiries";
 
 /** Who leads the work (node 2075:51). */
 export const aboutLead =
