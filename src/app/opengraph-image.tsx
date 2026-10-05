@@ -10,9 +10,9 @@ import { site } from "@/data/site";
  * search result's preview, an assistant's citation.
  *
  * It is the studio's own artwork rather than anything composed here. What this
- * file does is fit it to the frame: the supplied card is 5760 × 3400, and
+ * file does is fit it to the frame: the supplied card is 3600 × 1860, and
  * every platform that reads an og:image wants 1200 × 630. Handing over the
- * original would leave each of them to crop it however they saw fit, at eleven
+ * original would leave each of them to crop it however they saw fit, at nine
  * times the pixels anyone will look at.
  */
 export const alt = `${site.name} — brand design studio`;
@@ -33,13 +33,13 @@ const CARD = join(process.cwd(), "public/images/og image.png");
 const CANVAS = "#000000";
 
 /**
- * The supplied card is 1.694:1 against the frame's 1.905:1, so something has to
- * give. It is cropped rather than lettered-boxed: the wordmark sits in the
- * middle fifth of a very tall black field, so taking 11% off the height costs
- * nothing and leaves the type as large as the frame allows. The bars either way
- * would have been black on black and invisible — but smaller.
+ * The supplied card is 1.935:1 against the frame's 1.905:1, so something has to
+ * give. It is cropped rather than letterboxed: the type sits well inside a wide
+ * black field, so taking 1.5% off the width costs nothing and leaves it as large
+ * as the frame allows. The bars either way would have been black on black and
+ * invisible — but smaller.
  */
-const SCALED = { width: 1200, height: 708 };
+const SCALED = { width: 1219, height: 630 };
 
 export default async function Image() {
   const card = await readFile(CARD);
